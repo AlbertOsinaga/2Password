@@ -13,13 +13,13 @@ namespace _2PwdTests
     public class MR_Tests
     {
         [Fact]
-        public void AbrirMaestro_blanco()
+        public void OpenMaestro_blanco()
         {
             // Prepara
-            MR.ArchivoMaestro = string.Empty;
+            MR.FileNameMaestro = string.Empty;
 
             // Ejecuta
-            bool cargaOk = MR.AbrirMaestro();
+            bool cargaOk = MR.OpenMaestro();
 
             // Prueba
             Assert.False(cargaOk);
@@ -28,13 +28,13 @@ namespace _2PwdTests
         }
        
         [Fact]
-        public void AbrirMaestro_noExiste()
+        public void OpenMaestro_noExiste()
         {
             // Prepara
-            MR.ArchivoMaestro = "_MasterFileNoExiste";
+            MR.FileNameMaestro = "_MasterFileNoExiste";
 
             // Ejecuta
-            bool cargaOk = MR.AbrirMaestro();
+            bool cargaOk = MR.OpenMaestro();
 
             // Prueba
             Assert.False(cargaOk);
@@ -43,13 +43,13 @@ namespace _2PwdTests
         }
 
         [Fact]
-        public void AbrirMaestro_nulo()
+        public void OpenMaestro_nulo()
         {
             // Prepara
-            MR.ArchivoMaestro = null;
+            MR.FileNameMaestro = null;
 
             // Ejecuta
-            bool cargaOk = MR.AbrirMaestro();
+            bool cargaOk = MR.OpenMaestro();
 
             // Prueba
             Assert.False(cargaOk);
@@ -58,20 +58,21 @@ namespace _2PwdTests
         }
 
         [Fact]
-        public void AbrirMaestro_vacio()
+        public void OpenMaestro_vacio()
         {
             // Prepara
-            MR.ArchivoMaestro = "_MasterFileEmpty";
+            MR.FileNameMaestro = "_MasterFileEmpty";
             var dir = Environment.CurrentDirectory;
 
             // Ejecuta
-            bool cargaOk = MR.AbrirMaestro();
+            bool openOk = MR.OpenMaestro();
+            bool closeOk = MR.CloseMaestro();
 
             // Prueba
-            Assert.True(cargaOk);
-            Assert.True(MR.MaestroAbierto());
+            Assert.True(openOk);
             Assert.False(MR.HayError);
             Assert.Equal(string.Empty, MR.MensajeError);
+            Assert.True(closeOk);
         }
     }
 
