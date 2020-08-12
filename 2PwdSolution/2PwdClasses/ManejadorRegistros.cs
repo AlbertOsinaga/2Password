@@ -18,9 +18,9 @@ namespace _2PwdClasses
         public static string FileNameMaestro;
         public static bool HayError;
         public static string KeyFileMaestro;
-        public static string KeyStatus;
         public static string MensajeError;
         public static string StatusClosed;
+        public static string StatusMaestro;
         public static string StatusOpened;
         public static Dictionary<string, string> TablaRegistros;
 
@@ -33,10 +33,11 @@ namespace _2PwdClasses
             MR.FileNameMaestro = "_MasterFile";
             MR.HayError = false;
             MR.KeyFileMaestro = "@2PwdMasterFile";
-            MR.KeyStatus = "@status";
             MR.MensajeError = string.Empty;
             MR.StatusClosed = "closed";
             MR.StatusOpened = "opened";
+            MR.StatusMaestro = MR.StatusClosed;
+
             MR.TablaRegistros = new Dictionary<string, string>();
         }
         public static bool CloseMaestro()
@@ -45,12 +46,11 @@ namespace _2PwdClasses
             {
                 try
                 {
-                    if (MR.TablaRegistros[MR.KeyStatus] != null)
-                        MR.TablaRegistros.Remove(MR.KeyStatus);
                     var lineas = MR.TablaRegistros.Values.ToArray();
                     File.Delete(MR.FileNameMaestro);
                     File.WriteAllLines(MR.FileNameMaestro, new[] { MR.KeyFileMaestro });
                     File.AppendAllLines(MR.FileNameMaestro, lineas);
+                    MR.StatusMaestro = MR.StatusClosed;
                 }
                 catch (Exception ex)
                 {
@@ -61,7 +61,7 @@ namespace _2PwdClasses
 
             return true;
         }
-        public static bool IsMaestroOpen() => StatusMaestro() == MR.StatusOpened;
+        public static bool IsMaestroOpen() => MR.StatusMaestro == MR.StatusOpened;
         public static bool OpenMaestro()
         {
             MR.HayError = false;
@@ -93,8 +93,8 @@ namespace _2PwdClasses
             try
             {
                 MR.TablaRegistros.Clear();
-                MR.TablaRegistros[MR.KeyStatus] = MR.StatusOpened;
                 _ArrayToDictionary(lineas, MR.TablaRegistros);
+                MR.StatusMaestro = MR.StatusOpened;
             }
             catch (Exception ex)
             {
@@ -120,8 +120,6 @@ namespace _2PwdClasses
 
             #endregion
         }
-
-        public static string StatusMaestro() => MR.TablaRegistros[MR.KeyStatus] != null ? MR.TablaRegistros[MR.KeyStatus] : MR.StatusClosed;
 
         #endregion
     }
