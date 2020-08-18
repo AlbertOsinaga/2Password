@@ -22,6 +22,7 @@ namespace _2PwdClasses
         public static string MensajeError;
 
         public static string NameMaestro;
+        public static string NameMaestro_Default = "_MasterFile";
         public static string KeyMaestro;
 
         public static bool IsMaestroOpen { get => MR.StatusMaestro == MR.StatusOpened; }
@@ -40,7 +41,7 @@ namespace _2PwdClasses
             MR.HayError = false;
             MR.MensajeError = string.Empty;
 
-            MR.NameMaestro = "_MasterFile";
+            MR.NameMaestro = MR.NameMaestro_Default;
             MR.KeyMaestro = "@2PwdMasterFile";
 
             MR.StatusClosed = "closed";
@@ -50,7 +51,7 @@ namespace _2PwdClasses
             MR.TableMaestro = new Dictionary<string, RegistroPwd>();
         }
 
-        public static bool AddRegistro(RegistroPwd regPwd)
+        public static bool AddRegistro(RegistroPwd regPwd, bool fromCreate = false)
         {
             MR.InitMetodo();
             if (regPwd == null)
@@ -62,7 +63,15 @@ namespace _2PwdClasses
 
             var key = MR.KeyOfRegistroPwd(regPwd);
             if (key == null || string.IsNullOrEmpty(key) || key == "|||" || MR.TableMaestro.ContainsKey(key))
+            {
+                if(fromCreate)
+                {
+                    MR.HayError = true;
+                    MR.MensajeError = $"Error: key invalida o duplicada: '{key??"null"}'" + 
+                                        $", en {nameof(ManejadorRegistros)}.{nameof(AddRegistro)}!";
+                }
                 return false;
+            }
 
             MR.TableMaestro.Add(key, regPwd);
             return true;
@@ -107,29 +116,16 @@ namespace _2PwdClasses
         public static bool CreateRegistro(RegistroPwd regPwd)
         {
             MR.InitMetodo();
-            if(regPwd == null)
-            {
-                MR.HayError = true;
-                MR.MensajeError = $"Error: regPwd nulo, en {nameof(ManejadorRegistros)}.{nameof(CreateRegistro)}!";
-                return false;
-            }
-            if(!MR.IsMaestroOpen)
+            if (!MR.IsMaestroOpen)
             {
                 MR.HayError = true;
                 MR.MensajeError = $"Error: Maestro no abierto, en {nameof(ManejadorRegistros)}.{nameof(CreateRegistro)}!";
                 return false;
             }
 
-            var key = MR.KeyOfRegistroPwd(regPwd);
-            if (!(key == "|||"))
-            {
-                if (MR.TableMaestro.ContainsKey(key))
-                    MR.TableMaestro[key] = regPwd;
-                else
-                    MR.TableMaestro.Add(key, regPwd);
-            }
-
-            return true;
+            if (regPwd != null)
+                regPwd.CreateDate = DateTime.Now;
+            return MR.AddRegistro(regPwd, fromCreate:true);
         }
         public static bool DelRegistro(RegistroPwd regPwd)
         {
@@ -271,6 +267,18 @@ namespace _2PwdClasses
             row += regPwd.UpdateDate.ToString(G.FormatoFecha);
             
             return row;
+        }
+        public static RegistroPwd RetrieveRegistro(RegistroPwd regPwd)
+        {
+            MR.InitMetodo();
+            if (!MR.IsMaestroOpen)
+            {
+                MR.HayError = true;
+                MR.MensajeError = $"Error: Maestro no abierto, en {nameof(ManejadorRegistros)}.{nameof(RetrieveRegistro)}!";
+                return null;
+            }
+
+            return MR.GetRegistro(regPwd);
         }
         public static bool RowsToTable(string[] rows)
         {

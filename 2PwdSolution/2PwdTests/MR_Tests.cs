@@ -161,12 +161,92 @@ namespace _2PwdTests
             // Ejecuta
             bool openOk = MR.OpenMaestro();
             bool closeOk = MR.CloseMaestro();
+            MR.NameMaestro = MR.NameMaestro_Default;
 
             // Prueba
             Assert.True(closeOk);
             Assert.False(MR.HayError);
             Assert.Equal(string.Empty, MR.MensajeError);
             Assert.True(openOk);
+        }
+
+        [Fact]
+        public void CreatRegistro_conCamposNulos()
+        {
+            // Preparar
+            var regPwd = new RegistroPwd
+            {
+                Categoria = null
+            };
+
+            // Ejecutar
+            MR.OpenMaestro();
+            bool createOk = MR.CreateRegistro(regPwd);
+
+            // Probar
+            Assert.False(createOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: key invalida o duplicada: '|||', en ManejadorRegistros.AddRegistro!", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void CreateRegistro_noInicializado()
+        {
+            // Preparar
+            var regPwd = new RegistroPwd();
+
+            // Ejecutar
+            MR.OpenMaestro();
+            bool createOk = MR.CreateRegistro(regPwd);
+
+            // Probar
+            Assert.False(createOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: key invalida o duplicada: '|||', en ManejadorRegistros.AddRegistro!", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void CreateRegistro_nulo()
+        {
+            // Preparar
+            RegistroPwd regPwd = null;
+
+            // Ejecutar
+            MR.OpenMaestro();
+            bool createOk = MR.CreateRegistro(regPwd);
+
+            // Probar
+            Assert.False(createOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: regPwd nulo, en ManejadorRegistros.AddRegistro!", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void CreateRegistro_ok()
+        {
+            // Preparar
+            var regPwd = new RegistroPwd
+            {
+                Categoria = "Licencias",
+                Producto = "Audacity",
+                UserId = "luigi_alberto",
+                UserPwd = "illimani",
+                UserEMail = "luigi@gmail.com"
+            };
+
+            // Ejecutar
+            MR.OpenMaestro();
+            bool createOk = MR.CreateRegistro(regPwd);
+            RegistroPwd regPwdGet = MR.GetRegistro(regPwd);
+
+            // Probar
+            Assert.True(createOk);
+            Assert.Equal(regPwd.ToString(), regPwdGet.ToString());
+            MR.DelRegistro(regPwd);
+            MR.CloseMaestro();
         }
 
         [Fact]
@@ -480,14 +560,15 @@ namespace _2PwdTests
             MR.NameMaestro = string.Empty;
 
             // Ejecuta
-            bool cargaOk = MR.OpenMaestro();
+            bool openOk = MR.OpenMaestro();
+            MR.NameMaestro = MR.NameMaestro_Default;
 
             // Prueba
-            Assert.False(cargaOk);
+            Assert.False(openOk);
             Assert.True(MR.HayError);
             Assert.Equal("Archivo Maestro en blanco!", MR.MensajeError);
         }
-       
+
         [Fact]
         public void OpenMaestro_noExiste()
         {
@@ -496,11 +577,13 @@ namespace _2PwdTests
 
             // Ejecuta
             bool cargaOk = MR.OpenMaestro();
+            MR.NameMaestro = MR.NameMaestro_Default;
 
             // Prueba
             Assert.False(cargaOk);
             Assert.True(MR.HayError);
             Assert.Equal("Archivo Maestro '_MasterFileNoExiste' no existe!", MR.MensajeError);
+
         }
 
         [Fact]
@@ -511,6 +594,7 @@ namespace _2PwdTests
 
             // Ejecuta
             bool cargaOk = MR.OpenMaestro();
+            MR.NameMaestro = MR.NameMaestro_Default;
 
             // Prueba
             Assert.False(cargaOk);
@@ -522,7 +606,6 @@ namespace _2PwdTests
         public void OpenMaestro_ok()
         {
             // Prepara
-            // MR.NameMaestro = "_MasterFile"; // default
             var key1 = "software|google|cuenta|laos";
             var key2 = "software|google|cuenta|mickey";
             var key3 = "software|microsoft|cuenta|laos";
@@ -559,13 +642,12 @@ namespace _2PwdTests
 
             // Ejecuta
             bool openOk = MR.OpenMaestro();
-            bool closeOk = MR.CloseMaestro();
+            MR.NameMaestro = MR.NameMaestro_Default;
 
             // Prueba
             Assert.True(openOk);
             Assert.False(MR.HayError);
             Assert.Equal(string.Empty, MR.MensajeError);
-            Assert.True(closeOk);
         }
 
         [Fact]
@@ -651,6 +733,94 @@ namespace _2PwdTests
             Assert.Equal(rowEsperada, row);
             Assert.True(MR.HayError);
             Assert.Equal("regPWd nulo en ManejadorRegistros.RegistroPwdToRow()!", MR.MensajeError);
+        }
+
+        [Fact]
+        public void RetrieveRegistro_conCamposNulos()
+        {
+            // Preparar
+            var regPwd = new RegistroPwd
+            {
+                Categoria = null
+            };
+
+            // Ejecutar
+            MR.OpenMaestro();
+            RegistroPwd regPwdGet = MR.RetrieveRegistro(regPwd);
+
+            // Probar
+            Assert.Null(regPwdGet);
+            Assert.False(MR.HayError);
+            Assert.Equal("", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void RetrieveRegistro_noInicializado()
+        {
+            // Preparar
+            var regPwd = new RegistroPwd();
+
+            // Ejecutar
+            MR.OpenMaestro();
+            var regPwdGet = MR.RetrieveRegistro(regPwd);
+
+            // Probar
+            Assert.Null(regPwdGet);
+            Assert.False(MR.HayError);
+            Assert.Equal("", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void RetrieveRegistro_nulo()
+        {
+            // Preparar
+            RegistroPwd regPwd = null;
+
+            // Ejecutar
+            MR.OpenMaestro();
+            RegistroPwd regPwdGet = MR.RetrieveRegistro(regPwd);
+
+            // Probar
+            Assert.Null(regPwdGet);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: regPwd nulo, en ManejadorRegistros.GetRegistro!", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void RetrieveRegistro_ok()
+        {
+            // Preparar
+            var regPwdAdd = new RegistroPwd
+            {
+                Categoria = "Soft",
+                Empresa = "Adobe",
+                Producto = "Photoshop",
+                UserId = "luigi_alberto",
+                UserPwd = "illimani",
+                UserEMail = "luigi@gmail.com",
+                Nota = "Licencia 534535353"
+            };
+            var regPwd = new RegistroPwd
+            {
+                Categoria = "Soft",
+                Empresa = "Adobe",
+                Producto = "Photoshop",
+            };
+
+            // Ejecutar
+            MR.OpenMaestro();
+            MR.CreateRegistro(regPwdAdd);
+            RegistroPwd regPwdGet = MR.RetrieveRegistro(regPwd);
+
+            // Probar
+            Assert.True(MR.TableMaestro.ContainsKey(MR.KeyOfRegistroPwd(regPwd)));
+            Assert.False(MR.HayError);
+            Assert.Equal("", MR.MensajeError);
+            Assert.Equal(regPwdAdd.ToString(), regPwdGet.ToString());
+            MR.CloseMaestro();
         }
 
         [Fact]
