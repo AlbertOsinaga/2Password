@@ -20,6 +20,12 @@ namespace _2PwdClasses
        
         public DateTime CreateDate { get; set; }
         public DateTime UpdateDate { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Categoria}|{Empresa}|{Producto}|{Nombre}|{UserId}|{UserPwd}|{UserEMail}|{WebEmpresa}|{Nota}|" + 
+                    $"{CreateDate.ToString(Global.FormatoFecha)}|{UpdateDate.ToString(Global.FormatoFecha)}";
+        }
     }
 
 #region Footer

@@ -13,6 +13,7 @@ namespace _2PwdClasses
         public static string FormatoFecha = "yyyy/MM/dd HH:mm:ss";
         public static string NoFecha = "0001/01/01 00:00:00";
         public static string SeparadorCSV = ",";
+        public static string SeparadorKeyCSV = "|";
         #endregion
 
         #region Metodos
