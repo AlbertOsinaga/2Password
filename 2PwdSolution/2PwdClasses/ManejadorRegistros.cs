@@ -437,13 +437,6 @@ namespace _2PwdClasses
             catch {}
             return regPwd;
         }
-        public static string RunCommand(string cmd)
-        {
-            MR.InitMetodo();
-
-            var result = "";
-            return result;
-        }
         public static bool UpdateRegistro(RegistroPwd regPwd)
         {
             MR.InitMetodo();
