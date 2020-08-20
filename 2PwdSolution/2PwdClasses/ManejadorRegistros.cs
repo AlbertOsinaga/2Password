@@ -237,6 +237,32 @@ namespace _2PwdClasses
             ((regPwd.Producto ?? "").Trim().ToLower() + "|") +
             (regPwd.Nombre ?? "").Trim().ToLower()
             : "null!";
+        public static List<RegistroPwd> ListRegistros(string where = "")
+        {
+            MR.InitMetodo();
+            
+            var regs = new List<RegistroPwd>();
+            if(!MR.IsMaestroOpen)
+            {
+                MR.HayError = true;
+                MR.MensajeError = $"Error: maestro no abierto, en {nameof(ManejadorRegistros)}.{nameof(ListRegistros)}!";
+                return regs;
+            }
+            regs = MR.TableMaestro.Values.ToList();
+            return regs;
+        }
+        public static List<string> ListRows(string where = "")
+        {
+            var rows = new List<string>();
+            List<RegistroPwd> regs = MR.ListRegistros(where);
+            if (MR.HayError)
+                return rows;
+
+            foreach (var reg in regs)
+                rows.Add(MR.RegistroPwdToRow(reg));
+
+            return rows;
+        }
         public static bool OpenMaestro()
         {
             MR.InitMetodo();
@@ -410,6 +436,13 @@ namespace _2PwdClasses
             }
             catch {}
             return regPwd;
+        }
+        public static string RunCommand(string cmd)
+        {
+            MR.InitMetodo();
+
+            var result = "";
+            return result;
         }
         public static bool UpdateRegistro(RegistroPwd regPwd)
         {

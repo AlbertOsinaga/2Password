@@ -461,6 +461,91 @@ namespace _2PwdTests
         }
 
         [Fact]
+        public void DeleteRegistro_Str_conCamposNulos()
+        {
+            // Preparar
+            var row = "||||||||||";
+
+            // Ejecutar
+            MR.OpenMaestro();
+            bool deleteOk = MR.DeleteRegistro(row);
+
+            // Probar
+            Assert.False(deleteOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: key invalida o inexistente: '|||', en ManejadorRegistros.DelRegistro!", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void DeleteRegistro_Str_maestroNoOpen()
+        {
+            // Preparar
+            var row = "Aplicaciones||Audacity||luigi_alberto|illimani|luigi@gmail.com";
+
+            // Ejecutar
+            bool deleteOk = MR.DeleteRegistro(row);
+
+            // Probar
+            Assert.False(deleteOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: Maestro no abierto, en ManejadorRegistros.DeleteRegistro!", MR.MensajeError);
+        }
+
+        [Fact]
+        public void DeleteRegistro_Str_noInicializado()
+        {
+            // Preparar
+            var row = "";
+
+            // Ejecutar
+            MR.OpenMaestro();
+            bool deleteOk = MR.DeleteRegistro(row);
+
+            // Probar
+            Assert.False(deleteOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: key invalida o inexistente: '|||', en ManejadorRegistros.DelRegistro!", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void DeleteRegistro_Str_nulo()
+        {
+            // Preparar
+            string row = null;
+
+            // Ejecutar
+            MR.OpenMaestro();
+            bool deleteOk = MR.DeleteRegistro(row);
+
+            // Probar
+            Assert.False(deleteOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: row nula en ManejadorRegistros.DeleteRegistro!", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void DeleteRegistro_Str_ok()
+        {
+            // Preparar
+            var row = "Propiedades||Audacity||luigi_alberto|illimani|luigi@gmail.com";
+            MR.OpenMaestro();
+            MR.CreateRegistro(row);
+
+            // Ejecutar
+            bool deleteOk = MR.DeleteRegistro(row);
+
+            // Probar
+            RegistroPwd regPwdGet = MR.GetRegistro(row);
+            Assert.True(deleteOk);
+            Assert.Null(regPwdGet);
+            MR.DelRegistro(row);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
         public void DelRegistro_Reg_conCamposNulos()
         {
             // Preparar
@@ -762,6 +847,36 @@ namespace _2PwdTests
 
             // Prueba
             Assert.Equal(keyEsperada, key);
+        }
+
+        [Fact]
+        public void ListRows_maestroNoOpen()
+        {
+            // Prepara
+
+            // Ejecuta
+            var rows = MR.ListRows();
+
+            // Prueba
+            Assert.Equal(0, rows.Count);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: maestro no abierto, en ManejadorRegistros.ListRegistros!", MR.MensajeError);
+        }
+
+        [Fact]
+        public void ListRows_ok()
+        {
+            // Prepara
+            MR.OpenMaestro();
+
+            // Ejecuta
+            var rows = MR.ListRows();
+
+            // Prueba
+            Assert.Equal(4, rows.Count);
+            Assert.False(MR.HayError);
+            Assert.Equal("", MR.MensajeError);
+            MR.CloseMaestro();
         }
 
         [Fact]
@@ -1074,6 +1189,102 @@ namespace _2PwdTests
         }
 
         [Fact]
+        public void RetrieveRegistro_Str_conCamposNulos()
+        {
+            // Preparar
+            var row = "|";
+
+            // Ejecutar
+            MR.OpenMaestro();
+            RegistroPwd regPwdGet = MR.RetrieveRegistro(row);
+
+            // Probar
+            Assert.Null(regPwdGet);
+            Assert.False(MR.HayError);
+            Assert.Equal("", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void RetrieveRegistro_Str_maestroNoOpen()
+        {
+            // Preparar
+            var row = "Softs|Adobe|Photoshop||Luigi|Manix|luig@box.com|notita";
+            var rowKey = "softs|adobe|photoshop|";
+            MR.DelRegistro(rowKey);
+            MR.CreateRegistro(row);
+
+            // Ejecutar
+            RegistroPwd regPwd = MR.RetrieveRegistro(row);
+
+            // Probar
+            Assert.Null(regPwd);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: Maestro no abierto, en ManejadorRegistros.RetrieveRegistro!", MR.MensajeError);
+
+            // Cerrar
+            MR.DelRegistro(regPwd);
+        }
+
+        [Fact]
+        public void RetrieveRegistro_Str_noInicializado()
+        {
+            // Preparar
+            var row = "||||||||||";
+
+            // Ejecutar
+            MR.OpenMaestro();
+            var regPwd = MR.RetrieveRegistro(row);
+
+            // Probar
+            Assert.Null(regPwd);
+            Assert.False(MR.HayError);
+            Assert.Equal("", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void RetrieveRegistro_Str_nulo()
+        {
+            // Preparar
+            string row = null;
+
+            // Ejecutar
+            MR.OpenMaestro();
+            RegistroPwd regPwd = MR.RetrieveRegistro(row);
+
+            // Probar
+            Assert.Null(regPwd);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: row nula en ManejadorRegistros.RetrieveRegistro!", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void RetrieveRegistro_Str_ok()
+        {
+            // Preparar
+            var row = "Progras|Adobe|Photoshop|alberto|passw|alberto@gmail.com|nota extensa";
+            var rowKey = "progras|adobe|photoshop|";
+            MR.OpenMaestro();
+            MR.DelRegistro(rowKey);
+            MR.CreateRegistro(row);
+
+            // Ejecutar
+            RegistroPwd regPwd = MR.RetrieveRegistro(row);
+
+            // Probar
+            Assert.True(MR.TableMaestro.ContainsKey(MR.KeyOfRegistroPwd(regPwd)));
+            Assert.False(MR.HayError);
+            Assert.Equal("", MR.MensajeError);
+            Assert.Equal(row, regPwd.ToString().Substring(0, row.Length));
+
+            // Cerrar
+            MR.DelRegistro(regPwd);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
         public void RowsToTable_rowsNulo()
         {
             // Prepara
@@ -1292,10 +1503,10 @@ namespace _2PwdTests
             };
 
             // Ejecutar
-            bool createOk = MR.UpdateRegistro(regPwd);
+            bool updateOk = MR.UpdateRegistro(regPwd);
 
             // Probar
-            Assert.False(createOk);
+            Assert.False(updateOk);
             Assert.True(MR.HayError);
             Assert.Equal("Error: Maestro no abierto, en ManejadorRegistros.UpdateRegistro!", MR.MensajeError);
         }
@@ -1362,6 +1573,96 @@ namespace _2PwdTests
            
             // Cerrar
             MR.DelRegistro(regPwd);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void UpdateRegistro_Str_conCamposNulos()
+        {
+            // Preparar
+            var row = "|";
+
+            // Ejecutar
+            MR.OpenMaestro();
+            bool updateOk = MR.UpdateRegistro(row);
+
+            // Probar
+            Assert.False(updateOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: key invalida o inexistente: '|||', en ManejadorRegistros.UpdRegistro!", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void UpdateRegistro_Str_maestroNoOpen()
+        {
+            // Preparar
+            var row = "Keys||Word||luis|miclave|luis";
+
+            // Ejecutar
+            bool updateOk = MR.UpdateRegistro(row);
+
+            // Probar
+            Assert.False(updateOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: Maestro no abierto, en ManejadorRegistros.UpdateRegistro!", MR.MensajeError);
+        }
+
+        [Fact]
+        public void UpdateRegistro_Str_noInicializado()
+        {
+            // Preparar
+            var row = "||||||||||";
+
+            // Ejecutar
+            MR.OpenMaestro();
+            bool updateOk = MR.UpdateRegistro(row);
+
+            // Probar
+            Assert.False(updateOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: key invalida o inexistente: '|||', en ManejadorRegistros.UpdRegistro!", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void UpdateRegistro_Str_nulo()
+        {
+            // Preparar
+            string row = null;
+
+            // Ejecutar
+            MR.OpenMaestro();
+            bool updateOk = MR.UpdateRegistro(row);
+
+            // Probar
+            Assert.False(updateOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: row nula en ManejadorRegistros.UpdateRegistro!", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void UpdateRegistro_Str_ok()
+        {
+            // Preparar
+            var row = "cosas||speechelo||raul|password|mail@mall.com";
+            MR.OpenMaestro();
+            MR.DelRegistro(row);
+            MR.CreateRegistro(row);
+            var rowUpd = "cosas||speechelo||raul|clavesecreta|mail@mall.com";
+
+            // Ejecutar
+            bool updateOk = MR.UpdateRegistro(rowUpd);
+
+            // Probar
+            RegistroPwd regPwd = MR.GetRegistro(rowUpd);
+            Assert.True(updateOk);
+            Assert.Equal("clavesecreta", regPwd.UserPwd);
+            Assert.Equal(rowUpd, regPwd.ToString().Substring(0, rowUpd.Length));
+
+            // Cerrar
+            MR.DelRegistro(rowUpd);
             MR.CloseMaestro();
         }
 
