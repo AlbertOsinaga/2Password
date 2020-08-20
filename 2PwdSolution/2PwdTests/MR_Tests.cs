@@ -117,7 +117,7 @@ namespace _2PwdTests
         public void AddRegistro_Str_rowCamposVacios()
         {
             // Preparar
-            string row = ",,,,,,,,,,";
+            string row = "||||||||||";
 
             // Ejecutar
             bool addOk = MR.AddRegistro(row);
@@ -171,7 +171,7 @@ namespace _2PwdTests
         }
 
         [Fact]
-        public void CreatRegistro_conCamposNulos()
+        public void CreateRegistro_conCamposNulos()
         {
             // Preparar
             var regPwd = new RegistroPwd
@@ -188,6 +188,28 @@ namespace _2PwdTests
             Assert.True(MR.HayError);
             Assert.Equal("Error: key invalida o duplicada: '|||', en ManejadorRegistros.AddRegistro!", MR.MensajeError);
             MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void CreateRegistro_maestroNoOpen()
+        {
+            // Preparar
+            var regPwd = new RegistroPwd
+            {
+                Categoria = "Lics",
+                Producto = "Audacity",
+                UserId = "luigi_alberto",
+                UserPwd = "illimani",
+                UserEMail = "luigi@gmail.com"
+            };
+
+            // Ejecutar
+            bool createOk = MR.CreateRegistro(regPwd);
+
+            // Probar
+            Assert.False(createOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: Maestro no abierto, en ManejadorRegistros.CreateRegistro!", MR.MensajeError);
         }
 
         [Fact]
@@ -230,7 +252,139 @@ namespace _2PwdTests
             // Preparar
             var regPwd = new RegistroPwd
             {
-                Categoria = "Licencias",
+                Categoria = "Licenciamientos",
+                Producto = "Audacity",
+                UserId = "luigi_alberto",
+                UserPwd = "illimani",
+                UserEMail = "luigi@gmail.com"
+            };
+            MR.OpenMaestro();
+            MR.DelRegistro(regPwd);
+
+            // Ejecutar
+            bool createOk = MR.CreateRegistro(regPwd);
+
+            // Probar
+            RegistroPwd regPwdGet = MR.GetRegistro(regPwd);
+            Assert.True(createOk);
+            Assert.Equal(regPwd.ToString(), regPwdGet.ToString());
+            MR.DelRegistro(regPwd);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void CreateRegistro_Str_conCamposNulos()
+        {
+            // Preparar
+            string row = "";
+
+            // Ejecutar
+            MR.OpenMaestro();
+            bool createOk = MR.CreateRegistro(row);
+
+            // Probar
+            Assert.False(createOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: key invalida o duplicada: '|||', en ManejadorRegistros.AddRegistro!", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void CreateRegistro_Str_maestroNoOpen()
+        {
+            // Preparar
+            var row = "Licens||Audacity,luis,clave,mail";
+
+            // Ejecutar
+            bool createOk = MR.CreateRegistro(row);
+
+            // Probar
+            Assert.False(createOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: Maestro no abierto, en ManejadorRegistros.CreateRegistro!", MR.MensajeError);
+        }
+
+        [Fact]
+        public void CreateRegistro_Str_noInicializado()
+        {
+            // Preparar
+            var row = "";
+
+            // Ejecutar
+            MR.OpenMaestro();
+            bool createOk = MR.CreateRegistro(row);
+
+            // Probar
+            Assert.False(createOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: key invalida o duplicada: '|||', en ManejadorRegistros.AddRegistro!", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void CreateRegistro_Str_nulo()
+        {
+            // Preparar
+            string row = null;
+
+            // Ejecutar
+            MR.OpenMaestro();
+            bool createOk = MR.CreateRegistro(row);
+
+            // Probar
+            Assert.False(createOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: row nula en ManejadorRegistros.CreateRegistro!", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void CreateRegistro_Str_ok()
+        {
+            // Preparar
+            var row = "Claves|Banco|laos|clave1";
+            var rowEsperada = "Claves|Banco|laos|clave1";
+            MR.OpenMaestro();
+            MR.DelRegistro(row);
+            
+            // Ejecutar
+            bool createOk = MR.CreateRegistro(row);
+
+            // Probar
+            RegistroPwd regPwdGet = MR.GetRegistro(row);
+            Assert.True(createOk);
+            Assert.Equal(rowEsperada, regPwdGet.ToString().Substring(0, row.Length));
+            MR.DelRegistro(row);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void DeleteRegistro_conCamposNulos()
+        {
+            // Preparar
+            var regPwd = new RegistroPwd
+            {
+                Categoria = null
+            };
+
+            // Ejecutar
+            MR.OpenMaestro();
+            bool deleteOk = MR.DeleteRegistro(regPwd);
+
+            // Probar
+            Assert.False(deleteOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: key invalida o inexistente: '|||', en ManejadorRegistros.DelRegistro!", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void DeleteRegistro_maestroNoOpen()
+        {
+            // Preparar
+            var regPwd = new RegistroPwd
+            {
+                Categoria = "Aplicaciones",
                 Producto = "Audacity",
                 UserId = "luigi_alberto",
                 UserPwd = "illimani",
@@ -238,13 +392,70 @@ namespace _2PwdTests
             };
 
             // Ejecutar
-            MR.OpenMaestro();
-            bool createOk = MR.CreateRegistro(regPwd);
-            RegistroPwd regPwdGet = MR.GetRegistro(regPwd);
+            bool deleteOk = MR.DeleteRegistro(regPwd);
 
             // Probar
-            Assert.True(createOk);
-            Assert.Equal(regPwd.ToString(), regPwdGet.ToString());
+            Assert.False(deleteOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: Maestro no abierto, en ManejadorRegistros.DeleteRegistro!", MR.MensajeError);
+        }
+
+        [Fact]
+        public void DeleteRegistro_noInicializado()
+        {
+            // Preparar
+            var regPwd = new RegistroPwd();
+
+            // Ejecutar
+            MR.OpenMaestro();
+            bool deleteOk = MR.DeleteRegistro(regPwd);
+
+            // Probar
+            Assert.False(deleteOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: key invalida o inexistente: '|||', en ManejadorRegistros.DelRegistro!", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void DeleteRegistro_nulo()
+        {
+            // Preparar
+            RegistroPwd regPwd = null;
+
+            // Ejecutar
+            MR.OpenMaestro();
+            bool deleteOk = MR.DeleteRegistro(regPwd);
+
+            // Probar
+            Assert.False(deleteOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: regPwd nulo, en ManejadorRegistros.DelRegistro!", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void DeleteRegistro_ok()
+        {
+            // Preparar
+            var regPwd = new RegistroPwd
+            {
+                Categoria = "Licenciamientos",
+                Producto = "Audacity",
+                UserId = "luigi_alberto",
+                UserPwd = "illimani",
+                UserEMail = "luigi@gmail.com"
+            };
+            MR.OpenMaestro();
+            MR.CreateRegistro(regPwd);
+
+            // Ejecutar
+            bool deleteOk = MR.DeleteRegistro(regPwd);
+
+            // Probar
+            RegistroPwd regPwdGet = MR.GetRegistro(regPwd);
+            Assert.True(deleteOk);
+            Assert.Null(regPwdGet);
             MR.DelRegistro(regPwd);
             MR.CloseMaestro();
         }
@@ -610,10 +821,10 @@ namespace _2PwdTests
             var key2 = "software|google|cuenta|mickey";
             var key3 = "software|microsoft|cuenta|laos";
             var key4 = "software|adobe|readers|";
-            var rowEsperada1 = "Software,Google,Cuenta,LAOS,luis.osinaga@gmail.com,password,,www.google.com,,0001/01/01 00:00:00,0001/01/01 00:00:00";
-            var rowEsperada2 = "Software,Google,Cuenta,Mickey,luis.osinaga@gmail.com,password,,www.google.com,,0001/01/01 00:00:00,0001/01/01 00:00:00";
-            var rowEsperada3 = "Software,Microsoft,Cuenta,LAOS,luis.osinaga@gmail.com,password,,www.microsoft.com,,0001/01/01 00:00:00,0001/01/01 00:00:00";
-            var rowEsperada4 = "Software,Adobe,Readers,,luisalberto,clave,,www.adobe.com,,2019/03/12 10:15:20,2020/08/13 16:49:10";
+            var rowEsperada1 = "Software|Google|Cuenta|LAOS|luis.osinaga@gmail.com|password||www.google.com||0001/01/01 00:00:00|0001/01/01 00:00:00";
+            var rowEsperada2 = "Software|Google|Cuenta|Mickey|luis.osinaga@gmail.com|password||www.google.com||0001/01/01 00:00:00|0001/01/01 00:00:00";
+            var rowEsperada3 = "Software|Microsoft|Cuenta|LAOS|luis.osinaga@gmail.com|password||www.microsoft.com||0001/01/01 00:00:00|0001/01/01 00:00:00";
+            var rowEsperada4 = "Software|Adobe|Readers||luisalberto|clave||www.adobe.com||2019/03/12 10:15:20|2020/08/13 16:49:10";
             
             // Ejecuta
             bool openOk = MR.OpenMaestro();
@@ -666,7 +877,7 @@ namespace _2PwdTests
             regPwd.Nota = null;
             regPwd.CreateDate = new DateTime(2019, 03, 12, 10, 15, 20);
             regPwd.UpdateDate = new DateTime(2020, 08, 13, 16, 49, 10);
-            string rowEsperada = "Software,Google,Cuenta,LAOS,luis.osinaga@gmail.com,password,,www.google.com,,2019/03/12 10:15:20,2020/08/13 16:49:10";
+            string rowEsperada = "Software|Google|Cuenta|LAOS|luis.osinaga@gmail.com|password||www.google.com||2019/03/12 10:15:20|2020/08/13 16:49:10";
 
             // Ejecuta
             string row = MR.RegistroPwdToRow(regPwd);
@@ -682,7 +893,7 @@ namespace _2PwdTests
         {
             // Prepara
             RegistroPwd regPwd = new RegistroPwd();
-            string rowEsperada = ",,,,,,,,,0001/01/01 00:00:00,0001/01/01 00:00:00";
+            string rowEsperada = "|||||||||0001/01/01 00:00:00|0001/01/01 00:00:00";
 
             // Ejecuta
             string row = MR.RegistroPwdToRow(regPwd);
@@ -709,7 +920,7 @@ namespace _2PwdTests
             regPwd.Nota = "";
             regPwd.CreateDate = new DateTime(2019, 03, 12, 10, 15, 20);
             regPwd.UpdateDate = new DateTime(2020, 08, 13, 16, 49, 10);
-            string rowEsperada = "Software,Google,Cuenta,LAOS,luis.osinaga@gmail.com,password,,www.google.com,,2019/03/12 10:15:20,2020/08/13 16:49:10";
+            string rowEsperada = "Software|Google|Cuenta|LAOS|luis.osinaga@gmail.com|password||www.google.com||2019/03/12 10:15:20|2020/08/13 16:49:10";
 
             // Ejecuta
             string row = MR.RegistroPwdToRow(regPwd);
@@ -753,6 +964,41 @@ namespace _2PwdTests
             Assert.False(MR.HayError);
             Assert.Equal("", MR.MensajeError);
             MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void RetrieveRegistro_maestroNoOpen()
+        {
+            // Preparar
+            var regPwdAdd = new RegistroPwd
+            {
+                Categoria = "Soft",
+                Empresa = "Adobe",
+                Producto = "Photoshop",
+                UserId = "luigi_alberto",
+                UserPwd = "illimani",
+                UserEMail = "luigi@gmail.com",
+                Nota = "Licencia 534535353"
+            };
+            var regPwd = new RegistroPwd
+            {
+                Categoria = "Soft",
+                Empresa = "Adobe",
+                Producto = "Photoshop",
+            };
+            MR.DelRegistro(regPwd);
+            MR.CreateRegistro(regPwdAdd);
+
+            // Ejecutar
+            RegistroPwd regPwdGet = MR.RetrieveRegistro(regPwd);
+
+            // Probar
+            Assert.Null(regPwdGet);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: Maestro no abierto, en ManejadorRegistros.RetrieveRegistro!", MR.MensajeError);
+
+            // Cerrar
+            MR.DelRegistro(regPwd);
         }
 
         [Fact]
@@ -809,10 +1055,11 @@ namespace _2PwdTests
                 Empresa = "Adobe",
                 Producto = "Photoshop",
             };
+            MR.OpenMaestro();
+            MR.DelRegistro(regPwd);
+            MR.CreateRegistro(regPwdAdd);
 
             // Ejecutar
-            MR.OpenMaestro();
-            MR.CreateRegistro(regPwdAdd);
             RegistroPwd regPwdGet = MR.RetrieveRegistro(regPwd);
 
             // Probar
@@ -820,6 +1067,9 @@ namespace _2PwdTests
             Assert.False(MR.HayError);
             Assert.Equal("", MR.MensajeError);
             Assert.Equal(regPwdAdd.ToString(), regPwdGet.ToString());
+
+            // Cerrar
+            MR.DelRegistro(regPwd);
             MR.CloseMaestro();
         }
 
@@ -845,20 +1095,20 @@ namespace _2PwdTests
             // Prepara
             var rows = new string[]
                 { $"{MR.KeyMaestro}",
-                  "Software,Google,Cuenta,LAOS,luis.osinaga@gmail.com,password,,www.google.com,,2019/03/12 10:15:20,2020/08/13 16:49:10",
-                  "Software,Google,Cuenta,LAOS,luis.osinaga@gmail.com,password,,www.google.com,,,",
-                  "Software,Google,Cuenta,Mickey,luis.osinaga@gmail.com,password,,www.google.com,,,",
-                  "Software,Microsoft,Cuenta,LAOS,luis.osinaga@gmail.com,password,,www.microsoft.com,,,",
-                  "Software,Adobe,Readers,,luisalberto,clave,,www.adobe.com,,2019/03/12 10:15:20,2020/08/13 16:49:10"
+                  "Software|Google|Cuenta|LAOS|luis.osinaga@gmail.com|password||www.google.com||2019/03/12 10:15:20|2020/08/13 16:49:10",
+                  "Software|Google|Cuenta|LAOS|luis.osinaga@gmail.com|password||www.google.com|||",
+                  "Software|Google|Cuenta|Mickey|luis.osinaga@gmail.com|password||www.google.com|||",
+                  "Software|Microsoft|Cuenta|LAOS|luis.osinaga@gmail.com|password||www.microsoft.com|||",
+                  "Software|Adobe|Readers||luisalberto|clave||www.adobe.com||2019/03/12 10:15:20|2020/08/13 16:49:10"
                 };
             var key1 = "software|google|cuenta|laos";
             var key2 = "software|google|cuenta|mickey";
             var key3 = "software|microsoft|cuenta|laos";
             var key4 = "software|adobe|readers|";
-            var rowEsperada1 = "Software,Google,Cuenta,LAOS,luis.osinaga@gmail.com,password,,www.google.com,,2019/03/12 10:15:20,2020/08/13 16:49:10";
-            var rowEsperada2 = "Software,Google,Cuenta,Mickey,luis.osinaga@gmail.com,password,,www.google.com,,0001/01/01 00:00:00,0001/01/01 00:00:00";
-            var rowEsperada3 = "Software,Microsoft,Cuenta,LAOS,luis.osinaga@gmail.com,password,,www.microsoft.com,,0001/01/01 00:00:00,0001/01/01 00:00:00";
-            var rowEsperada4 = "Software,Adobe,Readers,,luisalberto,clave,,www.adobe.com,,2019/03/12 10:15:20,2020/08/13 16:49:10";
+            var rowEsperada1 = "Software|Google|Cuenta|LAOS|luis.osinaga@gmail.com|password||www.google.com||2019/03/12 10:15:20|2020/08/13 16:49:10";
+            var rowEsperada2 = "Software|Google|Cuenta|Mickey|luis.osinaga@gmail.com|password||www.google.com||0001/01/01 00:00:00|0001/01/01 00:00:00";
+            var rowEsperada3 = "Software|Microsoft|Cuenta|LAOS|luis.osinaga@gmail.com|password||www.microsoft.com||0001/01/01 00:00:00|0001/01/01 00:00:00";
+            var rowEsperada4 = "Software|Adobe|Readers||luisalberto|clave||www.adobe.com||2019/03/12 10:15:20|2020/08/13 16:49:10";
 
             // Ejecuta
             bool resultOk = MR.RowsToTable(rows);
@@ -911,7 +1161,9 @@ namespace _2PwdTests
 
             // Prueba
             Assert.True(resultOk);
+#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
             Assert.Equal(0, MR.TableMaestro.Count);
+#pragma warning restore xUnit2013
             Assert.False(MR.HayError);
             Assert.Equal("", MR.MensajeError);
         }
@@ -920,7 +1172,7 @@ namespace _2PwdTests
         public void RowToRegistroPwd_camposOk()
         {
             // Prepara
-            string rowEsperada = "Software,Google,Cuenta,LAOS,luis.osinaga@gmail.com,password,,www.google.com,,2019/03/12 10:15:20,2020/08/13 16:49:10";
+            string rowEsperada = "Software|Google|Cuenta|LAOS|luis.osinaga@gmail.com|password||www.google.com||2019/03/12 10:15:20|2020/08/13 16:49:10";
 
             // Ejecuta
             RegistroPwd regPwd = MR.RowToRegistroPwd(rowEsperada);
@@ -938,8 +1190,8 @@ namespace _2PwdTests
         public void RowToRegistroPwd_camposIncompletos()
         {
             // Prepara
-            string rowIn = ",,,,,,,";
-            string rowEsperada = ",,,,,,,,,0001/01/01 00:00:00,0001/01/01 00:00:00";
+            string rowIn = "|||||||";
+            string rowEsperada = "|||||||||0001/01/01 00:00:00|0001/01/01 00:00:00";
 
             // Ejecuta
             RegistroPwd regPwd = MR.RowToRegistroPwd(rowIn);
@@ -957,8 +1209,8 @@ namespace _2PwdTests
         public void RowToRegistroPwd_camposVacios()
         {
             // Prepara
-            string rowIn = ",,,,,,,,,,";
-            string rowEsperada = ",,,,,,,,,0001/01/01 00:00:00,0001/01/01 00:00:00";
+            string rowIn = "||||||||||";
+            string rowEsperada = "|||||||||0001/01/01 00:00:00|0001/01/01 00:00:00";
 
             // Ejecuta
             RegistroPwd regPwd = MR.RowToRegistroPwd(rowIn);
@@ -991,8 +1243,8 @@ namespace _2PwdTests
                 UserId = "",
                 UserPwd = "5323"
             };
-            var rowEsperada1 = "Soft,,Doodly,,Albertosky,infinitamente,,,,0001/01/01 00:00:00,0001/01/01 00:00:00";
-            var rowEsperada2 = "Card,,Mastercard,,,5323,,,,0001/01/01 00:00:00,0001/01/01 00:00:00";
+            var rowEsperada1 = "Soft||Doodly||Albertosky|infinitamente||||0001/01/01 00:00:00|0001/01/01 00:00:00";
+            var rowEsperada2 = "Card||Mastercard|||5323||||0001/01/01 00:00:00|0001/01/01 00:00:00";
             MR.TableMaestro[MR.KeyOfRegistroPwd(regPwd1)] = regPwd1;
             MR.TableMaestro[MR.KeyOfRegistroPwd(regPwd2)] = regPwd2;
 
@@ -1004,6 +1256,113 @@ namespace _2PwdTests
             Assert.Empty(MR.MensajeError);
             Assert.Equal(rowEsperada1, MR.RegistroPwdToRow(MR.TableMaestro[MR.KeyOfRegistroPwd(regPwd1)]));
             Assert.Equal(rowEsperada2, MR.RegistroPwdToRow(MR.TableMaestro[MR.KeyOfRegistroPwd(regPwd2)]));
+        }
+
+        [Fact]
+        public void UpdateRegistro_conCamposNulos()
+        {
+            // Preparar
+            var regPwd = new RegistroPwd
+            {
+                Categoria = null
+            };
+
+            // Ejecutar
+            MR.OpenMaestro();
+            bool updateOk = MR.UpdateRegistro(regPwd);
+
+            // Probar
+            Assert.False(updateOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: key invalida o inexistente: '|||', en ManejadorRegistros.UpdRegistro!", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void UpdateRegistro_maestroNoOpen()
+        {
+            // Preparar
+            var regPwd = new RegistroPwd
+            {
+                Categoria = "Lices",
+                Producto = "Audacity",
+                UserId = "luigi_alberto",
+                UserPwd = "illimani",
+                UserEMail = "luigi@gmail.com"
+            };
+
+            // Ejecutar
+            bool createOk = MR.UpdateRegistro(regPwd);
+
+            // Probar
+            Assert.False(createOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: Maestro no abierto, en ManejadorRegistros.UpdateRegistro!", MR.MensajeError);
+        }
+
+        [Fact]
+        public void UpdateRegistro_noInicializado()
+        {
+            // Preparar
+            var regPwd = new RegistroPwd();
+
+            // Ejecutar
+            MR.OpenMaestro();
+            bool updateOk = MR.UpdateRegistro(regPwd);
+
+            // Probar
+            Assert.False(updateOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: key invalida o inexistente: '|||', en ManejadorRegistros.UpdRegistro!", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void UpdateRegistro_nulo()
+        {
+            // Preparar
+            RegistroPwd regPwd = null;
+
+            // Ejecutar
+            MR.OpenMaestro();
+            bool updateOk = MR.UpdateRegistro(regPwd);
+
+            // Probar
+            Assert.False(updateOk);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: regPwd nulo, en ManejadorRegistros.UpdRegistro!", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void UpdateRegistro_ok()
+        {
+            // Preparar
+            var regPwd = new RegistroPwd
+            {
+                Categoria = "Miscosas",
+                Producto = "Audacity",
+                UserId = "luigi_alberto",
+                UserPwd = "illimani",
+                UserEMail = "luigi@gmail.com"
+            };
+            MR.OpenMaestro();
+            MR.DelRegistro(regPwd);
+            MR.CreateRegistro(regPwd);
+            regPwd.UserPwd = "lucifer";
+
+            // Ejecutar
+            bool updateOk = MR.UpdateRegistro(regPwd);
+
+            // Probar
+            RegistroPwd regPwdGet = MR.GetRegistro(regPwd);
+            Assert.True(updateOk);
+            Assert.Equal(regPwd.UserPwd, regPwdGet.UserPwd);
+            Assert.Equal(regPwd.ToString(), regPwdGet.ToString());
+           
+            // Cerrar
+            MR.DelRegistro(regPwd);
+            MR.CloseMaestro();
         }
 
         [Fact]
@@ -1116,7 +1475,7 @@ namespace _2PwdTests
         public void UpdRegistro_Str_rowCamposVacios()
         {
             // Preparar
-            string row = ",,,,,,,,,,";
+            string row = "||||||||||";
 
             // Ejecutar
             bool updOk = MR.UpdRegistro(row);
