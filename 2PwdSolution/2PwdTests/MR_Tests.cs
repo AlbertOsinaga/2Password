@@ -7,6 +7,7 @@ using MR = _2PwdClasses.ManejadorRegistros;
 using System.Threading.Tasks;
 using System.Reflection;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace _2PwdTests
 {
@@ -874,6 +875,43 @@ namespace _2PwdTests
 
             // Prueba
             Assert.Equal(4, rows.Count);
+            Assert.False(MR.HayError);
+            Assert.Equal("", MR.MensajeError);
+            MR.CloseMaestro();
+        }
+
+        [Fact]
+        public void ListRowsAsString_maestroNoOpen()
+        {
+            // Prepara
+
+            // Ejecuta
+            var rows = MR.ListRowsAsString();
+
+            // Prueba
+            Assert.Equal("", rows);
+            Assert.True(MR.HayError);
+            Assert.Equal("Error: maestro no abierto, en ManejadorRegistros.ListRegistros!", MR.MensajeError);
+        }
+
+        [Fact]
+        public void ListRowsAsString_ok()
+        {
+            // Prepara
+            MR.OpenMaestro();
+
+            // Ejecuta
+            var rows = MR.ListRowsAsString();
+
+            // Prueba
+            string[] rowsArray = rows.Split('\n','\r');
+            var rowsLista = new List<string>();
+            foreach (var item in rowsArray)
+            {
+                if (!string.IsNullOrEmpty(item))
+                    rowsLista.Add(item);
+            }
+            Assert.True(rowsLista.Count == 4);
             Assert.False(MR.HayError);
             Assert.Equal("", MR.MensajeError);
             MR.CloseMaestro();

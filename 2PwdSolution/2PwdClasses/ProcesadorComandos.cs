@@ -2,6 +2,7 @@
 
 using System;
 using PC = _2PwdClasses.ProcesadorComandos;
+using MR = _2PwdClasses.ManejadorRegistros;
 
 namespace _2PwdClasses
 {
@@ -30,47 +31,57 @@ namespace _2PwdClasses
             PC.HayError = false;
             PC.MensajeError = string.Empty;
         }
-        public static string[] Parse(string cmd)
+        public static Comando Parse(string cmd)
         {
             PC.InitMetodo();
+            var comando = new Comando();
 
             if(cmd == null)
             {
                 PC.HayError = true;
                 PC.MensajeError = $"Error: cmd nulo, en {nameof(ProcesadorComandos)}.{nameof(Parse)}!";
-                return null;
+                return comando;
             }
             if (string.IsNullOrWhiteSpace(cmd))
             {
                 PC.HayError = true;
                 PC.MensajeError = $"Error: cmd vacio, en {nameof(ProcesadorComandos)}.{nameof(Parse)}!";
-                return null;
+                return comando;
             }
 
             switch(cmd.Trim().ToLower())
             {
                 case "list":
-                    return new[] { "list" };
+                    comando.Cmd = "list";
+                    comando.Ok = true;
+                    break;
                 default:
                     PC.HayError = true;
                     PC.MensajeError = $"Error: cmd no reconcido, en {nameof(ProcesadorComandos)}.{nameof(Parse)}!";
                     break;
             }
 
-            return new string[] {};
+            return comando;
         }
-        public static string Run(string comando)
+        public static string Run(string cmd)
         {
             PC.InitMetodo();
 
-            if(comando == null)
-            {
-                PC.HayError = true;
-                PC.MensajeError = $"Error: cmd nulo, en {nameof(ProcesadorComandos)}.{nameof(Run)}!";
+            var respuesta = "";
+            var comando = PC.Parse(cmd);
+            if (!comando.Ok)
                 return "";
+            
+            switch (comando.Cmd)
+            {
+                case "list":
+                    respuesta = MR.ListRowsAsString();
+                    break;
+                default:
+                    break;
             }
-            var result = "";
-            return result;
+
+            return respuesta;
         }
 
         #endregion

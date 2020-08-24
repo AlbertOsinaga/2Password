@@ -76,6 +76,7 @@ namespace _2PwdClasses
             MR.TableMaestro.Add(key, regPwd);
             return true;
         }
+
         public static bool AddRegistro(string row)
         {
             if (row == null)
@@ -261,6 +262,21 @@ namespace _2PwdClasses
             foreach (var reg in regs)
                 rows.Add(MR.RegistroPwdToRow(reg));
 
+            return rows;
+        }
+        public static string ListRowsAsString(string where = "")
+        {
+            var lista = MR.ListRows();
+            var rows = "";
+            for(int i = 0; i < lista.Count; i++)
+            {
+                if (!string.IsNullOrEmpty(lista[i]))
+                {
+                    rows += lista[i];
+                    if(i < lista.Count - 1)
+                        rows += Environment.NewLine;
+                }
+            }
             return rows;
         }
         public static bool OpenMaestro()

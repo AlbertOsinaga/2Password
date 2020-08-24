@@ -21,11 +21,11 @@ namespace _2PwdTests
             string cmd = "dadadasd";
 
             // Ejecuta
-            string[] result = PC.Parse(cmd);
+            var comando = PC.Parse(cmd);
 
             // Prueba
-            Assert.NotNull(result);
-            Assert.True(result.Length == 0);
+            Assert.NotNull(comando);
+            Assert.False(comando.Ok);
             Assert.True(PC.HayError);
             Assert.Equal("Error: cmd no reconcido, en ProcesadorComandos.Parse!", PC.MensajeError);
         }
@@ -36,10 +36,11 @@ namespace _2PwdTests
             string cmd = "";
 
             // Ejecuta
-            string[] result = PC.Parse(cmd);
+            var comando = PC.Parse(cmd);
 
             // Prueba
-            Assert.Null(result);
+            Assert.NotNull(comando);
+            Assert.False(comando.Ok);
             Assert.True(PC.HayError);
             Assert.Equal("Error: cmd vacio, en ProcesadorComandos.Parse!", PC.MensajeError);
         }
@@ -50,10 +51,11 @@ namespace _2PwdTests
             string cmd = null;
 
             // Ejecuta
-            string[] result = PC.Parse(cmd);
+            var comando = PC.Parse(cmd);
 
             // Prueba
-            Assert.Null(result);
+            Assert.NotNull(comando);
+            Assert.False(comando.Ok);
             Assert.True(PC.HayError);
             Assert.Equal("Error: cmd nulo, en ProcesadorComandos.Parse!", PC.MensajeError);
         }
@@ -64,12 +66,11 @@ namespace _2PwdTests
             string cmd = "LiSt";
 
             // Ejecuta
-            string[] result = PC.Parse(cmd);
+            var comando = PC.Parse(cmd);
 
             // Prueba
-            Assert.NotNull(result);
-            Assert.True(result.Length == 1);
-            Assert.Equal("list", result[0]);
+            Assert.NotNull(comando);
+            Assert.Equal("list", comando.Cmd);
             Assert.False(PC.HayError);
             Assert.Equal("", PC.MensajeError);
         }
@@ -85,10 +86,10 @@ namespace _2PwdTests
             // Prueba
             Assert.Empty(result);
             Assert.True(PC.HayError);
-            Assert.Equal("Error: cmd nulo, en ProcesadorComandos.Run!", PC.MensajeError);
+            Assert.Equal("Error: cmd nulo, en ProcesadorComandos.Parse!", PC.MensajeError);
         }
     }
 
-    #region Footer
+#region Footer
 }
 #endregion
