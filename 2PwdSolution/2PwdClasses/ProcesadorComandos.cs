@@ -31,6 +31,17 @@ namespace _2PwdClasses
             PC.HayError = false;
             PC.MensajeError = string.Empty;
         }
+        private static string ListPwds()
+        {
+            string pwds = "";
+            bool ok = MR.OpenMaestro();
+            if(ok)
+            {
+                pwds = MR.ListRowsAsString();
+                MR.CloseMaestro();
+            }
+            return pwds;
+        }
         public static Comando Parse(string cmd)
         {
             PC.InitMetodo();
@@ -75,7 +86,7 @@ namespace _2PwdClasses
             switch (comando.Cmd)
             {
                 case "list":
-                    respuesta = MR.ListRowsAsString();
+                    respuesta = PC.ListPwds();
                     break;
                 default:
                     break;

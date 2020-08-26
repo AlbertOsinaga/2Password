@@ -20,6 +20,7 @@ namespace _2PwdClasses
 
         public static bool HayError;
         public static string MensajeError;
+        public static bool Updated;
 
         public static string NameMaestro;
         public static string NameMaestro_Default = "_MasterFile";
@@ -40,6 +41,7 @@ namespace _2PwdClasses
         {
             MR.HayError = false;
             MR.MensajeError = string.Empty;
+            MR.Updated = false;
 
             MR.NameMaestro = MR.NameMaestro_Default;
             MR.KeyMaestro = "@2PwdMasterFile";
@@ -96,10 +98,13 @@ namespace _2PwdClasses
             {
                 try
                 {
-                    var rows = MR.TableToRows();
-                    File.Delete(MR.NameMaestro);
-                    File.WriteAllLines(MR.NameMaestro, new[] { MR.KeyMaestro });
-                    File.AppendAllLines(MR.NameMaestro, rows);
+                    if (MR.Updated)
+                    {
+                        var rows = MR.TableToRows();
+                        File.Delete(MR.NameMaestro);
+                        File.WriteAllLines(MR.NameMaestro, new[] { MR.KeyMaestro });
+                        File.AppendAllLines(MR.NameMaestro, rows);
+                    }
                     MR.TableMaestro.Clear(); 
                     MR.StatusMaestro = MR.StatusClosed;
                 }
