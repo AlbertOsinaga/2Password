@@ -76,6 +76,7 @@ namespace _2PwdClasses
             }
 
             MR.TableMaestro.Add(key, regPwd);
+            MR.Updated = true;
             return true;
         }
 
@@ -193,6 +194,7 @@ namespace _2PwdClasses
             }
 
             MR.TableMaestro.Remove(key);
+            MR.Updated = true;
             return true;
         }
         public static bool DelRegistro(string row)
@@ -287,6 +289,8 @@ namespace _2PwdClasses
         public static bool OpenMaestro()
         {
             MR.InitMetodo();
+            MR.TableMaestro.Clear();
+            MR.Updated = false;
 
             if (string.IsNullOrWhiteSpace(MR.NameMaestro))
             {
@@ -383,6 +387,21 @@ namespace _2PwdClasses
             }
 
             return RetrieveRegistro(MR.RowToRegistroPwd(row));
+        }
+        public static string RetrieveRowRegistro(string row)
+        {
+            MR.InitMetodo();
+            string rowGet = "";
+            if (row == null)
+            {
+                MR.HayError = true;
+                MR.MensajeError = $"Error: row nula en {nameof(ManejadorRegistros)}.{nameof(RetrieveRegistro)}!";
+                return rowGet;
+            }
+
+            RegistroPwd regPwd = RetrieveRegistro(MR.RowToRegistroPwd(row));
+            rowGet = MR.RegistroPwdToRow(regPwd);
+            return (rowGet);
         }
         public static bool RowsToTable(string[] rows)
         {
@@ -507,6 +526,7 @@ namespace _2PwdClasses
             }
 
             MR.TableMaestro[key] = regPwd;
+            MR.Updated = true;
             return true;
         }
         public static bool UpdRegistro(string row)

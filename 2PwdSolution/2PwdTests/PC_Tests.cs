@@ -1,5 +1,6 @@
 ﻿#region Header
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 using _2PwdClasses;
@@ -71,6 +72,29 @@ namespace _2PwdTests
             // Prueba
             Assert.NotNull(comando);
             Assert.Equal("list", comando.Cmd);
+            Assert.False(PC.HayError);
+            Assert.Equal("", PC.MensajeError);
+        }
+        [Fact]
+        public void Run_cmdList_ok()
+        {
+            // Prepara
+            //ManejadorRegistros.CloseMaestro();
+            string cmd = "LiSt";
+
+            // Ejecuta
+            var pwds = PC.Run(cmd);
+
+            // Prueba
+            Assert.False(string.IsNullOrEmpty(pwds));
+            string[] rowsArray = pwds.Split('\n', '\r');
+            var rowsLista = new List<string>();
+            foreach (var item in rowsArray)
+            {
+                if (!string.IsNullOrEmpty(item))
+                    rowsLista.Add(item);
+            }
+            Assert.True(rowsLista.Count == 4);
             Assert.False(PC.HayError);
             Assert.Equal("", PC.MensajeError);
         }

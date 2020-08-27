@@ -898,6 +898,7 @@ namespace _2PwdTests
         public void ListRowsAsString_ok()
         {
             // Prepara
+            MR.CloseMaestro();
             MR.OpenMaestro();
 
             // Ejecuta
@@ -1531,6 +1532,7 @@ namespace _2PwdTests
         public void UpdateRegistro_maestroNoOpen()
         {
             // Preparar
+            MR.CloseMaestro();
             var regPwd = new RegistroPwd
             {
                 Categoria = "Lices",
