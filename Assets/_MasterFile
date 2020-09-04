@@ -1,5 +1,5 @@
 @2PwdMasterFile
-Software|Google|Cuenta|LAOS|luis.osinaga@gmail.com|password||www.google.com||0001/01/01 00:00:00|0001/01/01 00:00:00
-Software|Google|Cuenta|Mickey|luis.osinaga@gmail.com|password||www.google.com||0001/01/01 00:00:00|0001/01/01 00:00:00
-Software|Microsoft|Cuenta|LAOS|luis.osinaga@gmail.com|password||www.microsoft.com||0001/01/01 00:00:00|0001/01/01 00:00:00
-Software|Adobe|Readers||luisalberto|clave||www.adobe.com||2019/03/12 10:15:20|2020/08/13 16:49:10
+LAOS|Software|Google|Cuenta|1234|www.google.com|luis.osinaga@gmail.com|password|||0001/01/01 00:00:00|0001/01/01 00:00:00|
+Mickey|Software|Google|Cuenta||www.google.com|luis.osinaga@gmail.com|password|||0001/01/01 00:00:00|0001/01/01 00:00:00|
+LAOS|Software|Microsoft|Cuenta|9876|www.microsoft.com|luis.osinaga@gmail.com|password|||0001/01/01 00:00:00|0001/01/01 00:00:00|
+|Software|Adobe|Readers||www.adobe.com|luisalberto|clave|||2019/03/12 10:15:20|2020/08/13 16:49:10|

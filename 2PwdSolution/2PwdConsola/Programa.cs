@@ -15,15 +15,15 @@ namespace _2PwdConsola
             WriteLine("Hello 2Pwd!");
             WriteLine();
 
-            var pwds = PC.Run("LIST");
-            WriteLine(pwds);
+            //var pwds = PC.Run("LIST");
+            //WriteLine(pwds);
             WriteLine();
 
-            var adds = PC.Run("ADD: Categ|Empre|Produ|Nombre|usuario|clavesecreta|registro ejemplo!");
-            WriteLine(adds);
+            //var adds = PC.Run("ADD: Categ|Empre|Produ|Nombre|usuario|clavesecreta|registro ejemplo!");
+            //WriteLine(adds);
 
-            pwds = PC.Run("LIST");
-            WriteLine(pwds);
+            //pwds = PC.Run("LIST");
+            //WriteLine(pwds);
 
             ReadKey();
         }

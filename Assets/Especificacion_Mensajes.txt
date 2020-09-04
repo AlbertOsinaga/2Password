@@ -1,0 +1,66 @@
+COMANDOS 2Password
+
+add uno:usuarioNombre		// key trim() tolower()   
+	cat:categoria 			// key trim() tolower()
+	emp:empresa 			// key trim() tolower()
+	pro:producto 			// key trim() tolower()
+	num:numero				// key trim() tolower() 
+	
+	web:webEmpresa 			
+	uid:usuarioId 
+	ucl:usuarioClave 
+	uem:usuarioEmail  
+	unt:"notas del usuario" 
+	
+	
+del uno:usuarioNombre		// key trim() tolower() 
+	cat:categoria 			// key trim() tolower()
+	emp:empresa 			// key trim() tolower()
+	pro:producto 			// key trim() tolower()
+	num:numero				// key trim() tolower() 
+	
+	
+upd uno:usuarioNombre		// key trim() tolower() 
+    cat:categoria 			// key trim() tolower()
+	emp:empresa 			// key trim() tolower()
+	pro:producto 			// key trim() tolower()
+	num:numero				// key trim() tolower() 
+		
+	web:webEmpresa 			
+	uid:usuarioId 
+	ucl:usuarioClave 
+	uem:usuarioEmail  
+	unt:"notas del usuario"  
+	
+get uno:usuarioNombre		// key trim() tolower() 
+    cat:categoria 			// key trim() tolower()		
+	emp:empresa 			// key trim() tolower()
+	pro:producto 			// key trim() tolower()
+	num:numero				// key trim() tolower() 
+	
+	
+lst uno:usuarioNombre		// key trim() tolower() 
+    cat:categoria 			// key trim() tolower()	
+	emp:empresa 			// key trim() tolower()
+	pro:producto 			// key trim() tolower()
+	num:numero				// key trim() tolower()
+
+	web:webEmpresa 			
+	uid:usuarioId 
+	ucl:usuarioClave 
+	uem:usuarioEmail  
+	unt:"notas del usuario"  
+
+	col:"uno cat emp pro num web uid ucl uem unt fadd fupd regid"
+
+
+
+// Notas: 	Por lo menos una de las claves es necesaria.	
+// 			En caso de espacios en los datos se usan comillas.	
+// 			Con u empiezan todos los datos del usuario.
+// 			get,devuelve un solo registro, el que coincida incluidos los campos en blanco.
+//			lst, devuelve el grupo que iguale todos los campos no en blanco.
+//			lst col: enumera las columnas que se quieren listar, en caso de no mencionar esta opcion, se listan todos los campos
+//			uno: es el nombre o alias del usuario propietario de la clave.
+//			Los campos que comienzan con 'u' son datos del usuario, el resto es del producto u objeto cuya clave se desea almacenar.
+// 			fadd fupd y regid, son campos fecha de adicion, fecha de actualizacion y registro id, generados por el sistema. 	
