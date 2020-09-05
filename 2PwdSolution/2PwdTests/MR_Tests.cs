@@ -16,39 +16,6 @@ namespace _2PwdTests
     
     public class MR_Tests
     {
-        #region CloseMaestro
-
-        [Fact]
-        public void CloseMaestro_closed()
-        {
-            // Prepara
-            MR.StatusMaestro = MR.StatusClosed;
-
-            // Ejecuta
-            bool okClosed = MR.CloseMaestro();
-
-            // Prueba
-            Assert.True(okClosed);
-        }
-
-        [Fact]
-        public void CloseMaestro_vacio()
-        {
-            // Prepara
-            MR.OpenMaestro("_MasterFileEmpty");
-
-            // Ejecuta
-            bool closeOk = MR.CloseMaestro();
-            MR.NameMaestro = MR.NameMaestro_Default;
-
-            // Prueba
-            Assert.True(closeOk);
-            Assert.False(MR.HayError);
-            Assert.Equal("", MR.MensajeError);
-        }
-
-        #endregion
-
         #region CreateRegPwd
 
         [Fact]
@@ -124,38 +91,38 @@ namespace _2PwdTests
             Assert.Equal(rowEsperada, regPwdAdd.ToString());
         }
 
-        [Fact]
-        public void CreateRegPwd_ok_enMaestro()
-        {
-            // Preparar
-            var regPwd = new RegistroPwd
-            {
-                UserNombre = "WARI",
-                Categoria = "Licenciamientos",
-                Producto = "Audacity",
-                UserId = "luigi_alberto",
-                UserPwd = "illimani",
-                UserEMail = "luigi@gmail.com"
-            };
-            MR.CloseMaestro();
+        // [Fact]
+        //public void CreateRegPwd_ok_enMaestro()
+        //{
+        //    // Preparar
+        //    var regPwd = new RegistroPwd
+        //    {
+        //        UserNombre = "WARI",
+        //        Categoria = "Licenciamientos",
+        //        Producto = "Audacity",
+        //        UserId = "luigi_alberto",
+        //        UserPwd = "illimani",
+        //        UserEMail = "luigi@gmail.com"
+        //    };
+        //    MR.WriteMaestro();
 
-            // Ejecutar
-            MR.OpenMaestro();
-            RegistroPwd regPwdAdd = MR.CreateRegPwd(regPwd);
-            MR.CloseMaestro();
+        //    // Ejecutar
+        //    MR.ReadMaestro();
+        //    RegistroPwd regPwdAdd = MR.CreateRegPwd(regPwd);
+        //    MR.WriteMaestro();
 
 
-            // Probar
-            MR.OpenMaestro();
-            var regPwdGet = MR.RetrieveRegPwd(regPwd);
-            MR.DeleteRegPwd(regPwd);
-            MR.CloseMaestro();
+        //    // Probar
+        //    MR.ReadMaestro();
+        //    var regPwdGet = MR.RetrieveRegPwd(regPwd);
+        //    MR.DeleteRegPwd(regPwd);
+        //    MR.WriteMaestro();
 
-            Assert.NotNull(regPwdAdd);
-            Assert.Equal(regPwd.UserNombre, regPwdGet.UserNombre);
-            Assert.False(MR.HayError);
-            Assert.Equal("", MR.MensajeError);
-        }
+        //    Assert.NotNull(regPwdAdd);
+        //    Assert.Equal(regPwd.UserNombre, regPwdGet.UserNombre);
+        //    Assert.False(MR.HayError);
+        //    Assert.Equal("", MR.MensajeError);
+        //}
 
         [Fact]
         public void CreateRegPwd_row_noInicializado()
@@ -528,60 +495,61 @@ namespace _2PwdTests
 
         #endregion
 
-        #region OpenMaestro
+        #region ReadMaestro
 
         [Fact]
-        public void OpenMaestro_blanco()
+        public void ReadMaestro_blanco()
         {
             // Prepara
             MR.NameMaestro = string.Empty;
 
             // Ejecuta
-            MR.StatusMaestro = MR.StatusClosed;
-            bool openOk = MR.OpenMaestro();
+            MR.StatusMaestro = MR.StatusWrited;
+            bool readedOk = MR.ReadMaestro();
             MR.NameMaestro = MR.NameMaestro_Default;
 
             // Prueba
-            Assert.False(openOk);
+            Assert.False(readedOk);
             Assert.True(MR.HayError);
-            Assert.Equal("Archivo Maestro en blanco!", MR.MensajeError);
+            Assert.Equal("Nombre de archivo Maestro en blanco!", MR.MensajeError);
         }
 
         [Fact]
-        public void OpenMaestro_noExiste()
+        public void ReadMaestro_noExiste()
         {
             // Prepara
             MR.NameMaestro = "_MasterFileNoExiste";
+            MR.StatusMaestro = MR.StatusWrited;
 
             // Ejecuta
-            bool cargaOk = MR.OpenMaestro();
+            bool readedOk = MR.ReadMaestro();
             MR.NameMaestro = MR.NameMaestro_Default;
 
             // Prueba
-            Assert.False(cargaOk);
+            Assert.False(readedOk);
             Assert.True(MR.HayError);
             Assert.Equal("Archivo Maestro '_MasterFileNoExiste' no existe!", MR.MensajeError);
 
         }
 
         [Fact]
-        public void OpenMaestro_nulo()
+        public void ReadMaestro_nulo()
         {
             // Prepara
             MR.NameMaestro = null;
 
             // Ejecuta
-            bool cargaOk = MR.OpenMaestro();
+            bool readedOk = MR.ReadMaestro();
             MR.NameMaestro = MR.NameMaestro_Default;
 
             // Prueba
-            Assert.False(cargaOk);
+            Assert.False(readedOk);
             Assert.True(MR.HayError);
-            Assert.Equal("Archivo Maestro nulo!", MR.MensajeError);
+            Assert.Equal("Nombre de archivo Maestro nulo!", MR.MensajeError);
         }
 
         [Fact]
-        public void OpenMaestro_ok()
+        public void ReadMaestro_ok()
         {
             // Prepara
             var key1 = "laos|software|google|cuenta|1234";
@@ -592,12 +560,14 @@ namespace _2PwdTests
             var rowEsperada2 = "Mickey|Software|Google|Cuenta||www.google.com|luis.osinaga@gmail.com|password|||0001/01/01 00:00:00|0001/01/01 00:00:00|";
             var rowEsperada3 = "LAOS|Software|Microsoft|Cuenta|9876|www.microsoft.com|luis.osinaga@gmail.com|password|||0001/01/01 00:00:00|0001/01/01 00:00:00|";
             var rowEsperada4 = "|Software|Adobe|Readers||www.adobe.com|luisalberto|clave|||2019/03/12 10:15:20|2020/08/13 16:49:10|";
+            MR.StatusMaestro = MR.StatusWrited;
+            MR.NameMaestro = "_MasterFile_Ok";
 
             // Ejecuta
-            bool openOk = MR.OpenMaestro();
+            bool readedOk = MR.ReadMaestro();
 
             // Prueba
-            Assert.True(openOk);
+            Assert.True(readedOk);
             Assert.False(MR.HayError);
             Assert.Equal(string.Empty, MR.MensajeError);
             var regPwd = MR.TableMaestro[key1];
@@ -608,22 +578,23 @@ namespace _2PwdTests
             Assert.Equal(rowEsperada3, MR.RegistroPwdToRow(regPwd));
             regPwd = MR.TableMaestro[key4];
             Assert.Equal(rowEsperada4, MR.RegistroPwdToRow(regPwd));
-            MR.CloseMaestro();
+            MR.WriteMaestro();
+            MR.NameMaestro = MR.NameMaestro_Default;
         }
 
         [Fact]
-        public void OpenMaestro_vacio()
+        public void ReadMaestro_vacio()
         {
             // Prepara
             MR.NameMaestro = "_MasterFileEmpty";
             var dir = Environment.CurrentDirectory;
 
             // Ejecuta
-            bool openOk = MR.OpenMaestro();
+            bool readedOk = MR.ReadMaestro();
             MR.NameMaestro = MR.NameMaestro_Default;
 
             // Prueba
-            Assert.True(openOk);
+            Assert.True(readedOk);
             Assert.False(MR.HayError);
             Assert.Equal(string.Empty, MR.MensajeError);
         }
@@ -793,7 +764,7 @@ namespace _2PwdTests
                 Producto = "Photosho"
             };
             MR.ClearMaestro();
-            MR.CreateRegPwd(regPwdAdd);
+            MR.CreateRegPwd(regPwdAdd, enMaestro: false);
 
             // Ejecutar
             RegistroPwd regPwdGet = MR.RetrieveRegPwd(regPwd, enMaestro: false);
@@ -1234,6 +1205,61 @@ namespace _2PwdTests
             Assert.Equal(regPwdAdd.UserPwd, regPwdUpd.UserPwd);
             Assert.False(MR.HayError);
             Assert.Equal("", MR.MensajeError);
+        }
+
+        #endregion
+
+        #region WriteMaestro
+
+        [Fact]
+        public void WriteMaestro_Ok()
+        {
+            // Prepara
+            MR.ReadMaestro();
+
+            // Ejecuta
+            bool writeOk = MR.WriteMaestro();
+
+            // Prueba
+            Assert.True(writeOk);
+            Assert.False(MR.HayError);
+            Assert.Equal("", MR.MensajeError);
+        }
+
+        [Fact]
+        public void WriteMaestro_vacio()
+        {
+            // Prepara
+            MR.NameMaestro = "_MasterFileEmpty";
+            MR.ReadMaestro();
+
+            // Ejecuta
+            bool writeOk = MR.WriteMaestro();
+            MR.NameMaestro = MR.NameMaestro_Default;
+
+            // Prueba
+            Assert.True(writeOk);
+            Assert.False(MR.HayError);
+            Assert.Equal("", MR.MensajeError);
+        }
+
+        [Fact]
+        public void WriteMaestro_writed()
+        {
+            // Nota:
+            // El archivo Maestro solo puede escribirse una sola vez despues de leido.
+            // Para volver a escribirse, debe ser primero leido.
+
+            // Prepara
+            MR.StatusMaestro = MR.StatusWrited;
+
+            // Ejecuta
+            bool okWrited = MR.WriteMaestro();
+
+            // Prueba
+            Assert.False(okWrited);
+            Assert.True(MR.HayError);
+            Assert.Equal("Maestro no leido o ya escrito con anterioridad!", MR.MensajeError);
         }
 
         #endregion

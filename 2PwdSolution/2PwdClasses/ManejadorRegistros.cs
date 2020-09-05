@@ -27,10 +27,10 @@ namespace _2PwdClasses
         public static string KeyMaestro;
         public static string KeyVacia = "||||";
 
-        public static bool IsMaestroOpen { get => MR.StatusMaestro == MR.StatusOpened; }
-        public static string StatusClosed;
+        public static bool IsMaestroReaded { get => MR.StatusMaestro == MR.StatusReaded; }
+        public static string StatusWrited;
         public static string StatusMaestro;
-        public static string StatusOpened;
+        public static string StatusReaded;
 
         public static Dictionary<string, RegistroPwd> TableMaestro { get; set; }
 
@@ -47,9 +47,9 @@ namespace _2PwdClasses
             MR.NameMaestro = MR.NameMaestro_Default;
             MR.KeyMaestro = "@2PwdMasterFile";
 
-            MR.StatusClosed = "closed";
-            MR.StatusOpened = "opened";
-            MR.StatusMaestro = MR.StatusClosed;
+            MR.StatusWrited = "closed";
+            MR.StatusReaded = "opened";
+            MR.StatusMaestro = MR.StatusWrited;
 
             MR.TableMaestro = new Dictionary<string, RegistroPwd>();
         }
@@ -57,7 +57,9 @@ namespace _2PwdClasses
         public static RegistroPwd CreateRegPwd(RegistroPwd regPwd, bool enMaestro = true)
         {
             MR.InitMetodo();
-            if (enMaestro && !MR.OpenMaestro())
+            if (enMaestro)
+                ReadMaestro();
+            if (enMaestro && !MR.ReadMaestro())
                     return null;
 
             string key = MR.KeyOfRegistroPwd(regPwd);
@@ -76,7 +78,7 @@ namespace _2PwdClasses
             MR.Updated = true;
             
             if (enMaestro)
-                MR.CloseMaestro();
+                MR.WriteMaestro();
             
             return regPwd;
         }
@@ -87,39 +89,10 @@ namespace _2PwdClasses
             return MR.RegistroPwdToRow(regPwdAdd);
         }
         public static void ClearMaestro() => MR.TableMaestro.Clear();
-        public static bool CloseMaestro()
-        {
-            if (!MR.IsMaestroOpen)
-                return true;
-
-            MR.InitMetodo();
-
-            try
-            {
-                    if (MR.Updated)
-                    {
-                        var rows = MR.TableToRows();
-                        File.Delete(MR.NameMaestro);
-                        File.WriteAllLines(MR.NameMaestro, new[] { MR.KeyMaestro });
-                        File.AppendAllLines(MR.NameMaestro, rows);
-                    }
-                    MR.ClearMaestro();
-                    MR.StatusMaestro = MR.StatusClosed;
-            }
-            catch (Exception ex)
-            {
-                    MR.HayError = true;
-                    MR.MensajeError = Global.ArmaMensajeError($"Excepcion en metodo {nameof(ManejadorRegistros)}.{nameof(CloseMaestro)}",
-                                                                ex);
-                    return false;
-            }
-
-            return true;
-        }
         public static bool DeleteRegPwd(RegistroPwd regPwd, bool enMaestro = true)
         {
             MR.InitMetodo();
-            if (enMaestro && !MR.OpenMaestro())
+            if (enMaestro && !MR.ReadMaestro())
                 return false;
 
             string key = MR.KeyOfRegistroPwd(regPwd);
@@ -135,7 +108,7 @@ namespace _2PwdClasses
             MR.Updated = true;
 
             if (enMaestro)
-                MR.CloseMaestro();
+                MR.WriteMaestro();
 
             return true;
         }
@@ -200,21 +173,18 @@ namespace _2PwdClasses
         //    return rows;
         //}
 
-        public static bool OpenMaestro(string nombreArchivoMaestro = null)
+        public static string[] ReadFile() => File.ReadAllLines(MR.NameMaestro);
+        public static bool ReadMaestro()
         {
-            MR.Updated = false;
-            if (nombreArchivoMaestro == null && MR.IsMaestroOpen)
+            if (MR.IsMaestroReaded)
                 return true;
 
             MR.InitMetodo();
-            MR.NameMaestro = nombreArchivoMaestro ?? MR.NameMaestro;
-            MR.ClearMaestro();
-
             if (string.IsNullOrWhiteSpace(MR.NameMaestro))
             {
                 string nulo_enblanco = MR.NameMaestro == null ? "nulo" : "en blanco";
                 MR.HayError = true;
-                MR.MensajeError = $"Archivo Maestro {nulo_enblanco}!";
+                MR.MensajeError = $"Nombre de archivo Maestro {nulo_enblanco}!";
                 return false;
             }
             if (!File.Exists(MR.NameMaestro))
@@ -223,23 +193,24 @@ namespace _2PwdClasses
                 MR.MensajeError = $"Archivo Maestro '{MR.NameMaestro}' no existe!";
                 return false;
             }
-            var lineas = File.ReadAllLines(MR.NameMaestro);
-            if (lineas == null || lineas.Count() == 0 || !(lineas[0] == MR.KeyMaestro))
-            {
-                MR.HayError = true;
-                MR.MensajeError = $"'{MR.NameMaestro}' no tiene formato de Archivo Maestro!";
-                return false;
-            }
 
             try
             {
+                var lineas = MR.ReadFile();
+                if (lineas == null || lineas.Count() == 0 || !(lineas[0] == MR.KeyMaestro))
+                {
+                    MR.HayError = true;
+                    MR.MensajeError = $"'{MR.NameMaestro}' no tiene formato de Archivo Maestro!";
+                    return false;
+                }
                 MR.RowsToTable(lineas);
-                MR.StatusMaestro = MR.StatusOpened;
+                MR.StatusMaestro = MR.StatusReaded;
+                MR.Updated = false;
             }
             catch (Exception ex)
             {
                 MR.HayError = true;
-                MR.MensajeError = Global.ArmaMensajeError($"Excepcion en metodo {nameof(ManejadorRegistros)}.{nameof(OpenMaestro)}", ex);
+                MR.MensajeError = Global.ArmaMensajeError($"Excepcion en metodo {nameof(ManejadorRegistros)}.{nameof(ReadMaestro)}", ex);
                 return false;
             }
 
@@ -287,7 +258,7 @@ namespace _2PwdClasses
         public static RegistroPwd RetrieveRegPwd(RegistroPwd regPwd, bool enMaestro = true)
         {
             MR.InitMetodo();
-            if (enMaestro && !MR.OpenMaestro())
+            if (enMaestro && !MR.ReadMaestro())
                 return null;
 
             string key = MR.KeyOfRegistroPwd(regPwd);
@@ -303,7 +274,7 @@ namespace _2PwdClasses
 
             var regPwdGet = MR.TableMaestro[key];
             if (enMaestro)
-                MR.CloseMaestro();
+                MR.WriteMaestro();
 
             return regPwd;
         }
@@ -394,7 +365,7 @@ namespace _2PwdClasses
         public static RegistroPwd UpdateRegPwd(RegistroPwd regPwd, bool enMaestro = true)
         {
             MR.InitMetodo();
-            if (enMaestro && !MR.OpenMaestro())
+            if (enMaestro && !MR.ReadMaestro())
                 return null;
 
             string key = MR.KeyOfRegistroPwd(regPwd);
@@ -411,7 +382,7 @@ namespace _2PwdClasses
             MR.Updated = true;
 
             if (enMaestro)
-                MR.CloseMaestro();
+                MR.WriteMaestro();
 
             return MR.TableMaestro[key];
         }
@@ -440,10 +411,45 @@ namespace _2PwdClasses
 
             return rows.ToArray();
         }
+        public static void WriteFile()
+        {
+            var rows = MR.TableToRows();
+            File.Delete(MR.NameMaestro);
+            File.WriteAllLines(MR.NameMaestro, new[] { MR.KeyMaestro });
+            File.AppendAllLines(MR.NameMaestro, rows);
+        }
+        public static bool WriteMaestro()
+        {
+            if (!MR.IsMaestroReaded)
+            {
+                MR.HayError = true;
+                MR.MensajeError = "Maestro no leido o ya escrito con anterioridad!";
+                return false;
+            }
+
+            MR.InitMetodo();
+
+            try
+            {
+                if (MR.Updated)
+                    MR.WriteFile();
+                MR.ClearMaestro();
+                MR.StatusMaestro = MR.StatusWrited;
+            }
+            catch (Exception ex)
+            {
+                MR.HayError = true;
+                MR.MensajeError = Global.ArmaMensajeError($"Excepcion en metodo {nameof(ManejadorRegistros)}" + 
+                                                            $".{nameof(WriteMaestro)}", ex);
+                return false;
+            }
+
+            return true;
+        }
 
         #endregion
     }
 
-#region Footer
+    #region Footer
 }
 #endregion
