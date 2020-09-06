@@ -59,8 +59,6 @@ namespace _2PwdClasses
             MR.InitMetodo();
             if (enMaestro)
                 ReadMaestro();
-            if (enMaestro && !MR.ReadMaestro())
-                    return null;
 
             string key = MR.KeyOfRegistroPwd(regPwd);
             if (string.IsNullOrEmpty(key) || key == MR.KeyVacia || key == G.RegNull || MR.TableMaestro.ContainsKey(key))
@@ -78,7 +76,7 @@ namespace _2PwdClasses
             MR.Updated = true;
             
             if (enMaestro)
-                MR.WriteMaestro();
+                MR.WriteFile();
             
             return regPwd;
         }
@@ -88,7 +86,12 @@ namespace _2PwdClasses
             RegistroPwd regPwdAdd = MR.CreateRegPwd(regPwd, enMaestro);
             return MR.RegistroPwdToRow(regPwdAdd);
         }
-        public static void ClearMaestro() => MR.TableMaestro.Clear();
+        public static void ClearMaestro()
+        { 
+            MR.TableMaestro.Clear();
+            MR.Updated = false;
+            MR.StatusMaestro = MR.StatusWrited;
+        }
         public static bool DeleteRegPwd(RegistroPwd regPwd, bool enMaestro = true)
         {
             MR.InitMetodo();
@@ -176,6 +179,14 @@ namespace _2PwdClasses
         public static string[] ReadFile() => File.ReadAllLines(MR.NameMaestro);
         public static bool ReadMaestro()
         {
+            //
+            // ReadMaestro()
+            // - Solo 1 lectura efectiva, desde el archivo Maestro.
+            // Si el archivo maestro ha sido ya leido (status readed),
+            // devuelve true (y no error) sin hacer nada.
+            // Para una nueva lectura efectiva, desde archivo Maestro,
+            // debe estarse en status (writed = no readed)
+
             if (MR.IsMaestroReaded)
                 return true;
 
@@ -258,8 +269,8 @@ namespace _2PwdClasses
         public static RegistroPwd RetrieveRegPwd(RegistroPwd regPwd, bool enMaestro = true)
         {
             MR.InitMetodo();
-            if (enMaestro && !MR.ReadMaestro())
-                return null;
+            if (enMaestro)
+                MR.ReadMaestro();
 
             string key = MR.KeyOfRegistroPwd(regPwd);
             if (string.IsNullOrEmpty(key) || key == MR.KeyVacia || key == G.RegNull)
@@ -273,10 +284,7 @@ namespace _2PwdClasses
                 return null;
 
             var regPwdGet = MR.TableMaestro[key];
-            if (enMaestro)
-                MR.WriteMaestro();
-
-            return regPwd;
+            return regPwdGet;
         }
         public static string RetrieveRegPwd(string rowPwd, bool enMaestro = true)
         {
@@ -420,6 +428,15 @@ namespace _2PwdClasses
         }
         public static bool WriteMaestro()
         {
+            //
+            // WriteMaestro()
+            // - Solo 1 escritura efectiva, en el archivo Maestro.
+            // Si el archivo maestro ha sido ya escrito (status writed = not readed),
+            // devuelve false (y un mensaje de error) sin hacer nada.
+            // Para una nueva escritura efectiva, en el archivo Maestro,
+            // debe estarse en status (readed = no writed)
+            // - Solo se escribe al archivo si el flag Updated es true.
+
             if (!MR.IsMaestroReaded)
             {
                 MR.HayError = true;
@@ -434,7 +451,6 @@ namespace _2PwdClasses
                 if (MR.Updated)
                     MR.WriteFile();
                 MR.ClearMaestro();
-                MR.StatusMaestro = MR.StatusWrited;
             }
             catch (Exception ex)
             {

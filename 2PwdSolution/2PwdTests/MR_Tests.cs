@@ -91,38 +91,35 @@ namespace _2PwdTests
             Assert.Equal(rowEsperada, regPwdAdd.ToString());
         }
 
-        // [Fact]
-        //public void CreateRegPwd_ok_enMaestro()
-        //{
-        //    // Preparar
-        //    var regPwd = new RegistroPwd
-        //    {
-        //        UserNombre = "WARI",
-        //        Categoria = "Licenciamientos",
-        //        Producto = "Audacity",
-        //        UserId = "luigi_alberto",
-        //        UserPwd = "illimani",
-        //        UserEMail = "luigi@gmail.com"
-        //    };
-        //    MR.WriteMaestro();
+        [Fact]
+        public void CreateRegPwd_ok_enMaestro()
+        {
+            // Preparar
+            MR.ReadMaestro();
+            var regPwd = new RegistroPwd
+            {
+                UserNombre = "WARI",
+                Categoria = "Licores",
+                Producto = "Jony Wolker",
+                UserId = "wilmer_luis",
+                UserPwd = "ClaveSuperSecreta",
+                UserEMail = "wari@gmail.com"
+            };
+            MR.DeleteRegPwd(regPwd, enMaestro: false);
+            MR.WriteMaestro();
 
-        //    // Ejecutar
-        //    MR.ReadMaestro();
-        //    RegistroPwd regPwdAdd = MR.CreateRegPwd(regPwd);
-        //    MR.WriteMaestro();
+            // Ejecutar
+            RegistroPwd regPwdAdd = MR.CreateRegPwd(regPwd); // == RegistroPwd regPwdAdd = MR.CreateRegPwd(regPwd, enMaestro: true);
 
-
-        //    // Probar
-        //    MR.ReadMaestro();
-        //    var regPwdGet = MR.RetrieveRegPwd(regPwd);
-        //    MR.DeleteRegPwd(regPwd);
-        //    MR.WriteMaestro();
-
-        //    Assert.NotNull(regPwdAdd);
-        //    Assert.Equal(regPwd.UserNombre, regPwdGet.UserNombre);
-        //    Assert.False(MR.HayError);
-        //    Assert.Equal("", MR.MensajeError);
-        //}
+            // Probar
+            MR.ClearMaestro();
+            var regPwdGet = MR.RetrieveRegPwd(regPwd); // ¡= MR.RetrieveRegPwd(regPwd, enMaestro: true);
+            Assert.NotNull(regPwdAdd);
+            Assert.NotNull(regPwdGet);
+            Assert.Equal(regPwd.UserNombre, regPwdGet.UserNombre);
+            Assert.False(MR.HayError);
+            Assert.Equal("", MR.MensajeError);
+        }
 
         [Fact]
         public void CreateRegPwd_row_noInicializado()
