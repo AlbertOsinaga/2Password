@@ -105,8 +105,7 @@ namespace _2PwdTests
                 UserPwd = "ClaveSuperSecreta",
                 UserEMail = "wari@gmail.com"
             };
-            MR.DeleteRegPwd(regPwd, enMaestro: false);
-            MR.WriteMaestro();
+            MR.DeleteRegPwd(regPwd);  // == MR.DeleteRegPwd(regPwd, enMaestro: true);
 
             // Ejecutar
             RegistroPwd regPwdAdd = MR.CreateRegPwd(regPwd); // == RegistroPwd regPwdAdd = MR.CreateRegPwd(regPwd, enMaestro: true);
@@ -194,6 +193,33 @@ namespace _2PwdTests
             Assert.Equal(rowEsperada, rowPwdAdd);
         }
 
+        [Fact]
+        public void CreateRegPwd_row_ok_enMaestro()
+        {
+            // Preparar
+            var regPwd = new RegistroPwd
+            {
+                UserNombre = "VAnia",
+                Categoria = "Otras Claves",
+                Producto = "Mi Casa",
+                UserPwd = "9537",
+                UserEMail = "vania@gmail.com"
+            };
+            string rowPwd = MR.RegistroPwdToRow(regPwd);
+            MR.DeleteRegPwd(rowPwd);
+
+            // Ejecutar
+            string rowPwdAdd = MR.CreateRegPwd(rowPwd);   // == MR.CreateRegPwd(rowPwd, enMaestro: true);
+
+            // Probar
+            string rowPwdGet = MR.RetrieveRegPwd(rowPwd);
+            Assert.NotNull(rowPwdAdd);
+            Assert.NotNull(rowPwdGet);
+            Assert.Equal(rowPwdGet, rowPwdAdd);
+            Assert.False(MR.HayError);
+            Assert.Equal("", MR.MensajeError);
+        }
+
         #endregion
 
         #region DeleteRegistro
@@ -278,6 +304,38 @@ namespace _2PwdTests
         }
 
         [Fact]
+        public void DeleteRegPwd_ok_enMaestro()
+        {
+            // Preparar
+            var regPwd = new RegistroPwd
+            {
+                UserNombre = "Erick",
+                Categoria = "Programas",
+                Producto = "SharePoint",
+                UserId = "erick_ronald",
+                UserPwd = "Xanadu",
+                UserEMail = "erick@gmail.com"
+            };
+            RegistroPwd regPwdAdd = MR.CreateRegPwd(regPwd);
+            var regPwdDel = new RegistroPwd
+            {
+                UserNombre = "Erick",
+                Categoria = "Programas",
+                Producto = "SharePoint"
+            };
+
+            // Ejecutar
+            bool deleteOk = MR.DeleteRegPwd(regPwdDel);  // == MR.CreateRegPwd(regPwd, enMaestro: true);
+
+            // Probar
+            var regPwdGet = MR.RetrieveRegPwd(regPwdDel);
+            Assert.True(deleteOk);
+            Assert.Null(regPwdGet);
+            Assert.False(MR.HayError);
+            Assert.Equal("", MR.MensajeError);
+        }
+
+        [Fact]
         public void DeleteRegPwd_row_noInicializado()
         {
             // Preparar
@@ -347,6 +405,33 @@ namespace _2PwdTests
             Assert.True(deleteOk);
             Assert.False(MR.HayError);
             Assert.Equal("", MR.MensajeError);
+        }
+
+        [Fact]
+        public void DeleteRegPwd_row_ok_enMaestro()
+        {
+            // Preparar
+            var regPwd = new RegistroPwd
+            {
+                UserNombre = "Xime",
+                Categoria = "Tools",
+                Producto = "Photo",
+                UserId = "ximenita",
+                UserPwd = "clave ULTRA secreta",
+                UserEMail = "xime@gmail.com"
+            };
+            string rowPwd = MR.RegistroPwdToRow(regPwd);
+            MR.CreateRegPwd(rowPwd);
+
+            // Ejecutar
+            bool deleteOk = MR.DeleteRegPwd(rowPwd); // == MR.DeleteRegPwd(rowPwd, enMaestro: true);
+
+            // Probar
+            Assert.True(deleteOk);
+            Assert.False(MR.HayError);
+            Assert.Equal("", MR.MensajeError);
+            string rowPwdGet = MR.RetrieveRegPwd(rowPwd);
+            Assert.Null(rowPwdGet);
         }
 
         #endregion
@@ -773,6 +858,39 @@ namespace _2PwdTests
         }
 
         [Fact]
+        public void RetrieveRegPwd_ok_enMaestro()
+        {
+            // Preparar
+            var regPwdAdd = new RegistroPwd
+            {
+                Categoria = "Keys",
+                Empresa = "Adobe",
+                Producto = "Photosho",
+                UserId = "lu_alberto",
+                UserPwd = "illampu",
+                UserEMail = "lu@gmail.com",
+                UserNota = "Licencia 534535353"
+            };
+            var regPwd = new RegistroPwd
+            {
+                Categoria = "Keys",
+                Empresa = "Adobe",
+                Producto = "Photosho"
+            };
+            MR.CreateRegPwd(regPwdAdd);
+            MR.WriteMaestro();
+
+            // Ejecutar
+            RegistroPwd regPwdGet = MR.RetrieveRegPwd(regPwd); // == MR.RetrieveRegPwd(regPwd, enMaestro: true);
+
+            // Probar
+            Assert.NotNull(regPwdGet);
+            Assert.Equal(regPwdAdd.UserId, regPwdGet.UserId);
+            Assert.False(MR.HayError);
+            Assert.Equal("", MR.MensajeError);
+        }
+
+        [Fact]
         public void RetrieveRegPwd_row_noInicializado()
         {
             // Preparar
@@ -846,6 +964,33 @@ namespace _2PwdTests
 
             // Probar
             Assert.NotNull(rowPwdGet);
+            Assert.False(MR.HayError);
+            Assert.Equal("", MR.MensajeError);
+        }
+
+        [Fact]
+        public void RetrieveRegPwd_row_ok_enMaestro()
+        {
+            // Preparar
+            var regPwd = new RegistroPwd
+            {
+                UserNombre = "LATOS",
+                Categoria = "Varios",
+                Producto = "Excel",
+                UserId = "luis alberto",
+                UserPwd = "clave secreta",
+                UserEMail = "luis@gmail.com"
+            };
+            string rowPwd = MR.RegistroPwdToRow(regPwd);
+            string rowPwdAdd = MR.CreateRegPwd(rowPwd);
+            MR.WriteMaestro();
+
+            // Ejecutar
+            string rowPwdGet = MR.RetrieveRegPwd(rowPwd); // == MR.RetrieveRegPwd(rowPwd, enMaestro: true);
+
+            // Probar
+            Assert.NotNull(rowPwdGet);
+            Assert.Equal(rowPwdGet, rowPwdAdd);
             Assert.False(MR.HayError);
             Assert.Equal("", MR.MensajeError);
         }
@@ -1127,6 +1272,34 @@ namespace _2PwdTests
         }
 
         [Fact]
+        public void UpdateRegPwd_ok_enMaestro()
+        {
+            // Preparar
+            var regPwd = new RegistroPwd
+            {
+                UserNombre = "Peter",
+                Categoria = "Miscelaneos",
+                Producto = "1Password",
+                UserId = "peter ustinov",
+                UserPwd = "frase dificil",
+                UserEMail = "peter@gmail.com"
+            };
+            RegistroPwd regPwdAdd = MR.CreateRegPwd(regPwd);
+            regPwdAdd.UserId = "mario_bross";
+            regPwdAdd.UserPwd = "la@clave*mas$secreta";
+
+            // Ejecutar
+            RegistroPwd regPwdUpd = MR.UpdateRegPwd(regPwdAdd); // == MR.UpdateRegPwd(regPwdAdd, enMaestro: true);
+
+            // Probar
+            Assert.NotNull(regPwdUpd);
+            Assert.Equal(regPwdAdd.UserId, regPwdUpd.UserId);
+            Assert.Equal(regPwdAdd.UserPwd, regPwdUpd.UserPwd);
+            Assert.False(MR.HayError);
+            Assert.Equal("", MR.MensajeError);
+        }
+
+        [Fact]
         public void UpdateRegPwd_row_noInicializado()
         {
             // Preparar
@@ -1194,6 +1367,37 @@ namespace _2PwdTests
 
             // Ejecutar
             string rowPwdUpd = MR.UpdateRegPwd(rowPwdAdd, enMaestro: false);
+
+            // Probar
+            var regPwdUpd = MR.RowToRegistroPwd(rowPwdUpd);
+            Assert.NotNull(rowPwdUpd);
+            Assert.Equal(regPwdAdd.UserId, regPwdUpd.UserId);
+            Assert.Equal(regPwdAdd.UserPwd, regPwdUpd.UserPwd);
+            Assert.False(MR.HayError);
+            Assert.Equal("", MR.MensajeError);
+        }
+
+        [Fact]
+        public void UpdateRegPwd_row_ok_enMaestro()
+        {
+            // Preparar
+            var regPwd = new RegistroPwd
+            {
+                UserNombre = "Amalia",
+                Categoria = "Cards",
+                Producto = "MasterCard",
+                UserId = "Amalia Cadena",
+                UserPwd = "8835",
+                UserEMail = "acadena@gmail.com"
+            };
+            var regPwdAdd = MR.CreateRegPwd(regPwd);
+            regPwdAdd.UserId = "Amalita";
+            regPwdAdd.UserPwd = "1476";
+            string rowPwdAdd = MR.RegistroPwdToRow(regPwdAdd);
+
+
+            // Ejecutar
+            string rowPwdUpd = MR.UpdateRegPwd(rowPwdAdd); // == MR.UpdateRegPwd(rowPwdAdd, enMaestro: true);
 
             // Probar
             var regPwdUpd = MR.RowToRegistroPwd(rowPwdUpd);

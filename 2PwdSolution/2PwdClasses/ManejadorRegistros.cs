@@ -95,8 +95,8 @@ namespace _2PwdClasses
         public static bool DeleteRegPwd(RegistroPwd regPwd, bool enMaestro = true)
         {
             MR.InitMetodo();
-            if (enMaestro && !MR.ReadMaestro())
-                return false;
+            if (enMaestro)
+                ReadMaestro();
 
             string key = MR.KeyOfRegistroPwd(regPwd);
             if (string.IsNullOrEmpty(key) || key == MR.KeyVacia || key == G.RegNull || !MR.TableMaestro.ContainsKey(key))
@@ -111,7 +111,7 @@ namespace _2PwdClasses
             MR.Updated = true;
 
             if (enMaestro)
-                MR.WriteMaestro();
+                MR.WriteFile();
 
             return true;
         }
@@ -373,8 +373,8 @@ namespace _2PwdClasses
         public static RegistroPwd UpdateRegPwd(RegistroPwd regPwd, bool enMaestro = true)
         {
             MR.InitMetodo();
-            if (enMaestro && !MR.ReadMaestro())
-                return null;
+            if (enMaestro)
+                 MR.ReadMaestro();
 
             string key = MR.KeyOfRegistroPwd(regPwd);
             if (string.IsNullOrEmpty(key) || key == MR.KeyVacia || key == G.RegNull || !MR.TableMaestro.ContainsKey(key))
@@ -390,7 +390,7 @@ namespace _2PwdClasses
             MR.Updated = true;
 
             if (enMaestro)
-                MR.WriteMaestro();
+                MR.WriteFile();
 
             return MR.TableMaestro[key];
         }
