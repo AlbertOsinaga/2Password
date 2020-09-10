@@ -3,6 +3,7 @@
 using System;
 using PC = _2PwdClasses.ProcesadorComandos;
 using MR = _2PwdClasses.ManejadorRegistros;
+using System.Threading.Tasks;
 
 namespace _2PwdClasses
 {
@@ -15,6 +16,7 @@ namespace _2PwdClasses
 
         public static bool HayError;
         public static string MensajeError;
+        public static char SeparadorCmdArg = ' ';
 
         #endregion
 
@@ -31,18 +33,20 @@ namespace _2PwdClasses
             PC.HayError = false;
             PC.MensajeError = string.Empty;
         }
-        //private static string AddPwds(string arg)
+
+        //private static string AddRegPwd(string row)
         //{
-        //    var pwd = "";
-        //    bool ok = MR.OpenMaestro();
+        //    var rowPwd = "";
+        //    bool ok = MR.ReadMaestro();
         //    if (!ok)
-        //        return pwd;
-        //    ok = MR.CreateRegistro(arg);
+        //        return rowPwd;
+        //    MR.CreateRegPwd(row);
         //    if (ok)
-        //        pwd = MR.RetrieveRowRegistro(arg);
-        //    MR.CloseMaestro();
-        //    return pwd;
+        //        rowPwd = MR.RetrieveRegPwd(row);
+        //    MR.WriteMaestro();
+        //    return rowPwd;
         //}
+
         //private static string ListPwds()
         //{
         //    string pwds = "Categoría|Empresa|Producto|UsuarioNombre|UsuarioId|UsuarioPwd|EmpresaMail|EmpresaWeb|Notas|Fec.Creación|Fec.Actualización" + Environment.NewLine;
@@ -54,52 +58,118 @@ namespace _2PwdClasses
         //    }
         //    return pwds;
         //}
-        //public static Comando Parse(string comando)
-        //{
-        //    PC.InitMetodo();
-        //    var regComando = new Comando();
 
-        //    if(comando == null)
-        //    {
-        //        PC.HayError = true;
-        //        PC.MensajeError = $"Error: comando nulo, en {nameof(ProcesadorComandos)}.{nameof(Parse)}!";
-        //        return regComando;
-        //    }
-        //    if (string.IsNullOrWhiteSpace(comando))
-        //    {
-        //        PC.HayError = true;
-        //        PC.MensajeError = $"Error: cmd vacio, en {nameof(ProcesadorComandos)}.{nameof(Parse)}!";
-        //        return regComando;
-        //    }
+        public static Comando Parse(string lineaCmd)
+        {
+            // El objetivo de este metodo es convertir el formato en linea de comandos
+            // al registro de comando, con cmd identificando el comando,
+            // arg identificando la row sobre la que se debe operar
+            // y manejando el flag Ok para indicar si el parse (conversion) fue exitoso
 
-        //    int i = comando.IndexOf(':');
-        //    regComando.Cmd = comando.Trim().ToLower();
-        //    regComando.Arg = "";
-        //    if (i > 0)
-        //    {
-        //        regComando.Cmd = comando.Substring(0, i).Trim().ToLower();
-        //        if(i+1 >= 0)
-        //            regComando.Arg = comando.Substring(i+1).Trim();
-        //    }
+            PC.InitMetodo();
+            var regComando = new Comando();
 
-        //    switch(regComando.Cmd)
-        //    {
-        //        case "add":
-        //            regComando.Cmd = "add";
-        //            regComando.Ok = true;
-        //            break;
-        //        case "list":
-        //            regComando.Cmd = "list";
-        //            regComando.Ok = true;
-        //            break;
-        //        default:
-        //            PC.HayError = true;
-        //            PC.MensajeError = $"Error: cmd no reconcido, en {nameof(ProcesadorComandos)}.{nameof(Parse)}!";
-        //            break;
-        //    }
+            if (string.IsNullOrWhiteSpace(lineaCmd))
+            {
+                PC.HayError = true;
+                PC.MensajeError = $"Error: linea comando nula o vacia, en {nameof(ProcesadorComandos)}.{nameof(Parse)}!";
+                return regComando;
+            }
 
-        //    return regComando;
-        //}
+            int i = lineaCmd.IndexOf(PC.SeparadorCmdArg);  // ' '
+            if (i > 0)
+            {
+                regComando.Cmd = lineaCmd.Substring(0, i).Trim().ToLower();
+                if (i + 1 >= 4)
+                    regComando.Arg = lineaCmd.Substring(i + 1); 
+            }
+            if(regComando.Cmd.Length != 3)
+            {
+                PC.HayError = true;
+                PC.MensajeError = $"Error: Comando '{regComando.Cmd}' debe ser de 3 caracteres," + 
+                                    $" en {nameof(ProcesadorComandos)}.{nameof(Parse)}!";
+                return regComando;
+            }
+
+            switch (regComando.Cmd)
+            {
+                case "add":
+                case "del":
+                case "get":
+                case "lst":
+                case "upd":
+                    return Parse(regComando);
+                default:
+                    PC.HayError = true;
+                    PC.MensajeError = $"Error: comando '{regComando.Cmd}' no reconcido, " + 
+                                        $"en {nameof(ProcesadorComandos)}.{nameof(Parse)}!";
+                    return regComando; ;
+            }
+
+            Comando Parse(Comando regCmd)
+            {
+                switch (regComando.Cmd)
+                {
+                    case "add":
+                        return ParseAdd(regCmd);
+                    case "del":
+                    case "get":
+                    case "lst":
+                    case "upd":
+                    default:
+                        PC.HayError = true;
+                        PC.MensajeError = $"Error: comando '{regComando.Cmd}' no reconcido, " +
+                                            $"en {nameof(ProcesadorComandos)}.{nameof(Parse)}!";
+                        return regCmd;
+                }
+            }
+
+            Comando ParseAdd(Comando regCmd)
+            {
+                //
+                // Este metodo arma el argumento en una row normalizada de la forma
+                // UserNombre|Categoria|Empresa|Producto|Numero|WebEmpresa|UserId|UserPwd|UserEmail|userNotas|
+                //
+
+                string arg = "";
+                int ixUno = regCmd.Arg.IndexOf("uno:"); // UserNombre
+                if(ixUno >= 0)
+                {
+                    ixUno += 4;
+                    if(ixUno < regCmd.Arg.Length)
+                    {
+                        int endUno = ixUno;
+                        if(regCmd.Arg[ixUno] == '\"')
+                        {
+                            ixUno++;
+                            endUno = regCmd.Arg.IndexOf("\"", ixUno);
+                            if(endUno > ixUno)
+                            {
+                                arg += regCmd.Arg.Substring(ixUno, endUno - ixUno);
+                                regCmd.Arg = arg;
+                                regCmd.Ok = true;
+                            }
+                        }
+                        else
+                        {
+                            endUno = regCmd.Arg.IndexOf(" ", ixUno);
+                            endUno = endUno > 0 ? endUno : regCmd.Arg.Length;
+                            if (endUno > ixUno)
+                            {
+                                arg += regCmd.Arg.Substring(ixUno, endUno - ixUno);
+                                regCmd.Arg = arg;
+                                regCmd.Ok = true;
+                            }
+                        }
+
+                    }
+                }
+
+                return regCmd;
+            }
+        }
+
+
         //public static string Run(string comando)
         //{
         //    PC.InitMetodo();
@@ -108,7 +178,7 @@ namespace _2PwdClasses
         //    var regComando = PC.Parse(comando);
         //    if (!regComando.Ok)
         //        return "";
-            
+
         //    switch (regComando.Cmd)
         //    {
         //        case "add":
