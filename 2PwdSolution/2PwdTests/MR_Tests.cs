@@ -9,11 +9,12 @@ using System.Threading.Tasks;
 using System.Reflection;
 using System.Linq;
 using System.Collections.Generic;
+using System.Net.Mail;
 
 namespace _2PwdTests
 {
-#endregion
-    
+    #endregion
+
     public class MR_Tests
     {
         #region CreateRegPwd
@@ -583,11 +584,13 @@ namespace _2PwdTests
         public void ReadMaestro_blanco()
         {
             // Prepara
+            MR.DirMaestro = string.Empty;
             MR.NameMaestro = string.Empty;
 
             // Ejecuta
             MR.StatusMaestro = MR.StatusWrited;
             bool readedOk = MR.ReadMaestro();
+            MR.DirMaestro = MR.DirMaestro_Default;
             MR.NameMaestro = MR.NameMaestro_Default;
 
             // Prueba
@@ -605,20 +608,19 @@ namespace _2PwdTests
 
             // Ejecuta
             bool readedOk = MR.ReadMaestro();
-            MR.NameMaestro = MR.NameMaestro_Default;
 
             // Prueba
             Assert.False(readedOk);
             Assert.True(MR.HayError);
-            Assert.Equal("Archivo Maestro '_MasterFileNoExiste' no existe!", MR.MensajeError);
-
+            Assert.Equal($"Archivo Maestro '{MR.PathMaestro}' no existe!", MR.MensajeError);
+            MR.NameMaestro = MR.NameMaestro_Default;
         }
 
         [Fact]
         public void ReadMaestro_nulo()
         {
             // Prepara
-            MR.NameMaestro = null;
+            MR.PathMaestro = null;
 
             // Ejecuta
             bool readedOk = MR.ReadMaestro();

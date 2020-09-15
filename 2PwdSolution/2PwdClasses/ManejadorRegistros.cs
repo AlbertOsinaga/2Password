@@ -22,7 +22,16 @@ namespace _2PwdClasses
         public static string MensajeError;
         public static bool Updated;
 
-        public static string NameMaestro;
+        #region DirMaestro
+        private static string _dirMaestro; 
+        public static string DirMaestro { get { return _dirMaestro; } set { _dirMaestro = value; PathMaestro = _dirMaestro + _nameMaestro; } }
+        #endregion
+        #region NameMaestro
+        private static string _nameMaestro;
+        public static string NameMaestro { get { return _nameMaestro; } set { _nameMaestro = value; PathMaestro = _dirMaestro + _nameMaestro; } }
+        #endregion
+        public static string PathMaestro;
+        public static string DirMaestro_Default = @"C:\Users\luisosinaga\Documents\";
         public static string NameMaestro_Default = "_MasterFile";
         public static string KeyMaestro;
         public static string KeyVacia = "||||";
@@ -44,7 +53,9 @@ namespace _2PwdClasses
             MR.MensajeError = string.Empty;
             MR.Updated = false;
 
+            MR.DirMaestro = MR.DirMaestro_Default;
             MR.NameMaestro = MR.NameMaestro_Default;
+            MR.PathMaestro = MR.DirMaestro + MR.NameMaestro;
             MR.KeyMaestro = "@2PwdMasterFile";
 
             MR.StatusWrited = "closed";
@@ -176,7 +187,20 @@ namespace _2PwdClasses
         //    return rows;
         //}
 
-        public static string[] ReadFile() => File.ReadAllLines(MR.NameMaestro);
+        public static IEnumerable<string> ReadFile()
+        {
+            var allLines = new List<string>();
+            using (var reader = new StreamReader(MR.PathMaestro))
+            {
+                var line = reader.ReadLine();
+                while (line != null)
+                {
+                    allLines.Add(line);
+                    line = reader.ReadLine();
+                }
+            }
+            return allLines;
+        }
         public static bool ReadMaestro()
         {
             //
@@ -191,27 +215,27 @@ namespace _2PwdClasses
                 return true;
 
             MR.InitMetodo();
-            if (string.IsNullOrWhiteSpace(MR.NameMaestro))
+            if (string.IsNullOrWhiteSpace(MR.PathMaestro))
             {
-                string nulo_enblanco = MR.NameMaestro == null ? "nulo" : "en blanco";
+                string nulo_enblanco = MR.PathMaestro == null ? "nulo" : "en blanco";
                 MR.HayError = true;
                 MR.MensajeError = $"Nombre de archivo Maestro {nulo_enblanco}!";
                 return false;
             }
-            if (!File.Exists(MR.NameMaestro))
+            if (!File.Exists(MR.PathMaestro))
             {
                 MR.HayError = true;
-                MR.MensajeError = $"Archivo Maestro '{MR.NameMaestro}' no existe!";
+                MR.MensajeError = $"Archivo Maestro '{MR.PathMaestro}' no existe!";
                 return false;
             }
 
             try
             {
-                var lineas = MR.ReadFile();
+                var lineas = (MR.ReadFile()).ToArray();
                 if (lineas == null || lineas.Count() == 0 || !(lineas[0] == MR.KeyMaestro))
                 {
                     MR.HayError = true;
-                    MR.MensajeError = $"'{MR.NameMaestro}' no tiene formato de Archivo Maestro!";
+                    MR.MensajeError = $"'{MR.PathMaestro}' no tiene formato de Archivo Maestro!";
                     return false;
                 }
                 MR.RowsToTable(lineas);
@@ -421,10 +445,15 @@ namespace _2PwdClasses
         }
         public static void WriteFile()
         {
-            var rows = MR.TableToRows();
-            File.Delete(MR.NameMaestro);
-            File.WriteAllLines(MR.NameMaestro, new[] { MR.KeyMaestro });
-            File.AppendAllLines(MR.NameMaestro, rows);
+            File.Delete(MR.PathMaestro);
+
+            using (var writer = new StreamWriter(MR.PathMaestro))
+            {
+                var rows = MR.TableToRows();
+                writer.WriteLine(MR.KeyMaestro);
+                foreach (var row in rows)
+                    writer.WriteLine(row);
+            }
         }
         public static bool WriteMaestro()
         {
