@@ -137,6 +137,35 @@ namespace _2PwdTests
             Assert.Equal("upd", regCmd.Cmd);
             Assert.Equal("Luis Alberto|Software|Microsoft|Microsoft Azure|#123001|web.azure.com|laos|supersecreta|luis.@gmail.com|prueba de registro|||", regCmd.Arg);
         }
+
+        [Fact]
+        public void Parse_upd_ok_noCamposSistema()
+        {
+            // Prepara
+            var lineaComando = "upd -cta Microsoft Azure -nro #123001 -nom Luis Alberto -cat Software -emp Microsoft " +
+                        " -web web.azure.com -uid laos -pwd supersecreta -ema luis.@gmail.com -not prueba de registro ";
+
+            // Ejecuta
+            var regCmd = PC.Parse(lineaComando);
+
+            // Prueba
+            Assert.True(regCmd.Ok);
+            Assert.Equal("upd", regCmd.Cmd);
+            Assert.Equal("Luis Alberto|Software|Microsoft|Microsoft Azure|#123001|web.azure.com|laos|supersecreta|luis.@gmail.com|prueba de registro|||", regCmd.Arg);
+        }
+
+        [Fact]
+        public void Run_add_ok()
+        {
+            // Prepara
+            var lineaComando = "add -cta Gmail LAOS -uid luis@gmail.com -pwd claveSecreta$";
+
+            // Ejecuta
+            var respuesta = PC.Run(lineaComando);
+
+            // Prueba
+            Assert.Contains("|||Gmail LAOS|||luis@gmail.com|claveSecreta$||", respuesta);
+        }
     }
 
     #region Footer

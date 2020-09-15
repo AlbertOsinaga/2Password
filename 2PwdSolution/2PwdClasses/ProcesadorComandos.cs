@@ -36,31 +36,6 @@ namespace _2PwdClasses
             PC.MensajeError = string.Empty;
         }
 
-        //private static string AddRegPwd(string row)
-        //{
-        //    var rowPwd = "";
-        //    bool ok = MR.ReadMaestro();
-        //    if (!ok)
-        //        return rowPwd;
-        //    MR.CreateRegPwd(row);
-        //    if (ok)
-        //        rowPwd = MR.RetrieveRegPwd(row);
-        //    MR.WriteMaestro();
-        //    return rowPwd;
-        //}
-
-        //private static string ListPwds()
-        //{
-        //    string pwds = "Categoría|Empresa|Producto|UsuarioNombre|UsuarioId|UsuarioPwd|EmpresaMail|EmpresaWeb|Notas|Fec.Creación|Fec.Actualización" + Environment.NewLine;
-        //    bool ok = MR.OpenMaestro();
-        //    if(ok)
-        //    {
-        //        pwds += MR.ListRowsAsString();
-        //        MR.CloseMaestro();
-        //    }
-        //    return pwds;
-        //}
-
         public static Comando Parse(string lineaCmd)
         {
             // El objetivo de este metodo es convertir el formato en linea de comandos
@@ -178,30 +153,47 @@ namespace _2PwdClasses
             #endregion
         }
 
+        public static string Run(string comando)
+        {
+            PC.InitMetodo();
 
-        //public static string Run(string comando)
-        //{
-        //    PC.InitMetodo();
+            var respuesta = "";
+            var regComando = PC.Parse(comando);
+            if (!regComando.Ok)
+                return "Error en Parse!";
 
-        //    var respuesta = "";
-        //    var regComando = PC.Parse(comando);
-        //    if (!regComando.Ok)
-        //        return "";
+            switch (regComando.Cmd)
+            {
+                case "add":
+                case "get":
+                case "upd":
+                    if (!MR.HayError)
+                    {
+                        respuesta = MR.CreateRegPwd(regComando.Arg, enMaestro: false);
+                    }
+                    else
+                    {
+                        respuesta = $"*** {MR.MensajeError} ***";
+                    }
+                    break;
+                case "del":
+                    if (!MR.HayError)
+                    {
+                        bool deleteOk = MR.DeleteRegPwd(regComando.Arg);
+                        respuesta = deleteOk ? "*** registro borrado! ***" : "*** no borrado! ***";
+                    }
+                    else
+                    {
+                        respuesta = $"*** {MR.MensajeError} ***";
+                    }
+                    break;
+                default:
+                    respuesta = $"*** Comando '{regComando.Cmd}' no reconocido! ***";
+                    break;
+            }
 
-        //    switch (regComando.Cmd)
-        //    {
-        //        case "add":
-        //            respuesta = PC.AddPwds(regComando.Arg);https://api.taboola.com/2.0/json/msn-anaheim-us/recommendations.notify-click?app.type=desktop&app.apikey=dd914485a5ed62ec1086bc1f372e410b851bc1e0&response.id=__57dbf6376eb42ccc5f4fcae52edb7879__ea64cd5a5101de84268a61dd6b307d65&response.session=v2_0afbed84ab22413805f7a94cf9362b7d_109624A5BCFD6E122D462A5FBDE96FC1_1599918471_1599918471_CIi3jgYQsORKGMz669e4ipfamgEgASgFMB44htMHQOCHEEi02dgDUP___________wFYAGAAaJHhgryfr6Tf2QE&item.id=%7E%7EV1%7E%7E-1206419116654905771%7E%7ELapUE77QL7-UbwMbvLG3OfBnf6AgXMqtwCFBTr-GeVYndpXq_nTToVci-tV_1bYyPVPbFHdycXfyr1VxmozLcV7JbGFbjtizQN29Zpin8p1JlawpbYFtoRw_FVSAoDPy8yoVX_ZV1DUzrU9mgEqIxUUWQYJbJAZQ_PxdsyidTxwHevLFaRMtkz52WhIKlmx7-csEBSsOEU6ufprwD-3fSi9Ezl800pG9duHuzBPjTUSAhDH4QnJoSS1idJX-Rd20Sh1b8LRPczWnT2TkP21u0fHnd3F8OVk2bR-QZRW3RyT-S5sN_yP-AY0beD0JthKK&item.type=text&sig=119fe907cc58e7c19f4e32bc2d3a55265ca250c5dc4f&redir=https%3A%2F%2Fwww.vpnmentor.com%2Fpopular%2Fwatch-disney-plus-online-anywhere%2F%3Futm_source%3Dtaboola%26utm_medium%3Dpaid%26tblcid%3DGiAc8YD07K6TzKrK-qmzpcVlVWEr6Ia40h5EYeyoYNdQHyCs8U4%26campaign%3DDisney%2BPlus%2B-%2BPremium%2B-%2BNew%26campaignid%3D5755473%26site%3Dmsn-anaheim-us%26siteid%3D1225264%26title%3DUnblock%2BDisney%2BPlus%2BFrom%2BBolivia%2521%26image%3Dhttp%253A%252F%252Fcdn.taboola.com%252Flibtrc%252Fstatic%252Fthumbnails%252FGETTY_IMAGES%252FSKP%252F1032516774__UGubyCf8.jpg%26accountid%3D1292460%26ad%3D2918819387%26tblci%3DGiAc8YD07K6TzKrK-qmzpcVlVWEr6Ia40h5EYeyoYNdQHyCs8U4%23tblciGiAc8YD07K6TzKrK-qmzpcVlVWEr6Ia40h5EYeyoYNdQHyCs8U4&ui=109624A5BCFD6E122D462A5FBDE96FC1
-        //            break;
-        //        case "list":
-        //            respuesta = PC.ListPwds();
-        //            break;
-        //        default:
-        //            break;
-        //    }
-
-        //    return respuesta;
-        //}
+            return respuesta;
+        }
 
         #endregion
     }
