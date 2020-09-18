@@ -21,6 +21,8 @@ namespace _2PwdClasses
             UserNota = "";
             CreateDate = DateTime.MinValue;
             UpdateDate = DateTime.MinValue;
+            RegId = "";
+            LastRegId = "";
         }
 
         public string UserNombre { get; set; }
@@ -38,11 +40,12 @@ namespace _2PwdClasses
         public DateTime CreateDate { get; set; }
         public DateTime UpdateDate { get; set; }
         public string RegId { get; set; }
+        public string LastRegId { get; set; }
 
         public override string ToString()
         {
             return $"{UserNombre}|{Categoria}|{Empresa}|{Producto}|{Numero}|{Web}|{UserId}|{UserPwd}|{UserEMail}|{UserNota}|" + 
-                    $"{CreateDate.ToString(Global.FormatoFecha)}|{UpdateDate.ToString(Global.FormatoFecha)}|{RegId}";
+                    $"{CreateDate.ToString(Global.FormatoFecha)}|{UpdateDate.ToString(Global.FormatoFecha)}|{RegId}|{LastRegId}";
         }
     }
 

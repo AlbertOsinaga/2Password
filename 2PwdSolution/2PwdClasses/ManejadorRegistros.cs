@@ -31,10 +31,10 @@ namespace _2PwdClasses
         public static string NameMaestro { get { return _nameMaestro; } set { _nameMaestro = value; PathMaestro = _dirMaestro + _nameMaestro; } }
         #endregion
         public static string PathMaestro;
-        public static string DirMaestro_Default = @"C:\Users\luisosinaga\Documents\";
-        public static string NameMaestro_Default = "_MasterFile";
+        public static string DirMaestro_Default;
+        public static string NameMaestro_Default;
         public static string KeyMaestro;
-        public static string KeyVacia = "||||";
+        public static string KeyVacia;
 
         public static bool IsMaestroReaded { get => MR.StatusMaestro == MR.StatusReaded; }
         public static string StatusWrited;
@@ -53,10 +53,14 @@ namespace _2PwdClasses
             MR.MensajeError = string.Empty;
             MR.Updated = false;
 
+            MR.DirMaestro_Default = @"C:\Users\luisosinaga\Documents\";
+            MR.NameMaestro_Default = "_MasterFile";
+
             MR.DirMaestro = MR.DirMaestro_Default;
             MR.NameMaestro = MR.NameMaestro_Default;
             MR.PathMaestro = MR.DirMaestro + MR.NameMaestro;
             MR.KeyMaestro = "@2PwdMasterFile";
+            MR.KeyVacia = "|||||";
 
             MR.StatusWrited = "closed";
             MR.StatusReaded = "opened";
@@ -67,22 +71,34 @@ namespace _2PwdClasses
 
         public static RegistroPwd CreateRegPwd(RegistroPwd regPwd, bool enMaestro = true)
         {
+            var maestroReadedOk = true;
             MR.InitMetodo();
             if (enMaestro)
-                ReadMaestro();
+                maestroReadedOk = ReadMaestro();
+
+            if (!maestroReadedOk)
+                return null;
 
             string key = MR.KeyOfRegistroPwd(regPwd);
-            if (string.IsNullOrEmpty(key) || key == MR.KeyVacia || key == G.RegNull || MR.TableMaestro.ContainsKey(key))
+            if (!MR.IsKeyValida(key))
             {
                 MR.HayError = true;
-                MR.MensajeError = $"Error: key invalida o duplicada: '{key??"null"}'" + 
+                MR.MensajeError = $"Error: key invalida: '{key??"null"}'" + 
                                   $", en {nameof(ManejadorRegistros)}.{nameof(CreateRegPwd)}!";
                 return null;
             }
-            
+            if (MR.KeyExiste(key))
+            {
+                MR.HayError = true;
+                MR.MensajeError = $"Error: key duplicada: '{key ?? "null"}'" +
+                                  $", en {nameof(ManejadorRegistros)}.{nameof(CreateRegPwd)}!";
+                return null;
+            }
+
             regPwd.CreateDate = DateTime.Now;
             regPwd.UpdateDate = DateTime.MinValue;
             regPwd.RegId = (MR.TableMaestro.Keys.Count() + 1).ToString();
+            regPwd.LastRegId = "";
             MR.TableMaestro.Add(key, regPwd);
             MR.Updated = true;
             
@@ -97,7 +113,7 @@ namespace _2PwdClasses
             RegistroPwd regPwdAdd = MR.CreateRegPwd(regPwd, enMaestro);
             return MR.RegistroPwdToRow(regPwdAdd);
         }
-        public static void ClearMaestro()
+        public static void ClearTableMaestro()
         { 
             MR.TableMaestro.Clear();
             MR.Updated = false;
@@ -105,20 +121,35 @@ namespace _2PwdClasses
         }
         public static bool DeleteRegPwd(RegistroPwd regPwd, bool enMaestro = true)
         {
+            var maestroReadedOk = true;
             MR.InitMetodo();
             if (enMaestro)
-                ReadMaestro();
+                maestroReadedOk = ReadMaestro();
+
+            if (!maestroReadedOk)
+                return false;
 
             string key = MR.KeyOfRegistroPwd(regPwd);
-            if (string.IsNullOrEmpty(key) || key == MR.KeyVacia || key == G.RegNull || !MR.TableMaestro.ContainsKey(key))
+            if (!MR.IsKeyValida(key))
             {
                 MR.HayError = true;
-                MR.MensajeError = $"Error: key invalida o inexistente: '{key ?? "null"}'" +
+                MR.MensajeError = $"Error: key invalida: '{key ?? "null"}'" +
+                                  $", en {nameof(ManejadorRegistros)}.{nameof(DeleteRegPwd)}!";
+                return false;
+            }
+            if (!MR.KeyExiste(key))
+            {
+                MR.HayError = true;
+                MR.MensajeError = $"Error: key inexistente: '{key ?? "null"}'" +
                                   $", en {nameof(ManejadorRegistros)}.{nameof(DeleteRegPwd)}!";
                 return false;
             }
 
+            var regPwdDel = TableMaestro[key];
+            regPwdDel.LastRegId = regPwdDel.RegId;
+            var keyDel = MR.KeyOfRegistroPwd(regPwdDel);
             MR.TableMaestro.Remove(key);
+            MR.TableMaestro.Add(keyDel, regPwdDel);
             MR.Updated = true;
 
             if (enMaestro)
@@ -131,62 +162,39 @@ namespace _2PwdClasses
             RegistroPwd regPwd = MR.RowToRegistroPwd(rowPwd);
             return MR.DeleteRegPwd(regPwd, enMaestro);
         }
+        public static bool EmptyMaestro()
+        {
+            try
+            {
+                File.WriteAllText(MR.PathMaestro, MR.KeyMaestro);
+                MR.StatusMaestro = MR.StatusWrited;
+                MR.Updated = false;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MR.HayError = true;
+                MR.MensajeError = Global.ArmaMensajeError($"Excepcion en metodo {nameof(ManejadorRegistros)}" +
+                                                            $".{nameof(EmptyMaestro)}", ex);
+                return false;
+            }
+        }
         public static void InitMetodo()
         {
             MR.HayError = false;
             MR.MensajeError = string.Empty;
         }
+        public static bool IsKeyValida(string key) => !string.IsNullOrEmpty(key) && !(key == MR.KeyVacia) && !(key == G.RegNull);
+        public static bool KeyExiste(string key) => MR.TableMaestro.ContainsKey(key);
         public static string KeyOfRegistroPwd(RegistroPwd regPwd) =>
             regPwd != null ?
             ((regPwd.UserNombre ?? "").Trim().ToLower() + G.SeparadorCSV) +
             ((regPwd.Categoria ?? "").Trim().ToLower() + G.SeparadorCSV) +
             ((regPwd.Empresa ?? "").Trim().ToLower() + G.SeparadorCSV) +
             ((regPwd.Producto ?? "").Trim().ToLower() + G.SeparadorCSV) +
-            (regPwd.Numero ?? "").Trim().ToLower()
+            ((regPwd.Numero ?? "").Trim().ToLower() + G.SeparadorCSV) +
+            (regPwd.LastRegId ?? "").Trim().ToLower() 
             : G.RegNull;
-
-        //public static List<RegistroPwd> ListRegistros(string where = "")
-        //{
-        //    MR.InitMetodo();
-
-        //    var regs = new List<RegistroPwd>();
-        //    if(!MR.IsMaestroOpen)
-        //    {
-        //        MR.HayError = true;
-        //        MR.MensajeError = $"Error: maestro no abierto, en {nameof(ManejadorRegistros)}.{nameof(ListRegistros)}!";
-        //        return regs;
-        //    }
-        //    regs = MR.TableMaestro.Values.ToList();
-        //    return regs;
-        //}
-        //public static List<string> ListRows(string where = "")
-        //{
-        //    var rows = new List<string>();
-        //    List<RegistroPwd> regs = MR.ListRegistros(where);
-        //    if (MR.HayError)
-        //        return rows;
-
-        //    foreach (var reg in regs)
-        //        rows.Add(MR.RegistroPwdToRow(reg));
-
-        //    return rows;
-        //}
-        //public static string ListRowsAsString(string where = "")
-        //{
-        //    var lista = MR.ListRows();
-        //    var rows = "";
-        //    for(int i = 0; i < lista.Count; i++)
-        //    {
-        //        if (!string.IsNullOrEmpty(lista[i]))
-        //        {
-        //            rows += lista[i];
-        //            if(i < lista.Count - 1)
-        //                rows += Environment.NewLine;
-        //        }
-        //    }
-        //    return rows;
-        //}
-
         public static IEnumerable<string> ReadFile()
         {
             var allLines = new List<string>();
@@ -287,17 +295,23 @@ namespace _2PwdClasses
             row += regPwd.UpdateDate.ToString(G.FormatoFecha);
             row += G.SeparadorCSV;
             row += regPwd.RegId;
+            row += G.SeparadorCSV;
+            row += regPwd.LastRegId;
 
             return row;
         }
         public static RegistroPwd RetrieveRegPwd(RegistroPwd regPwd, bool enMaestro = true)
         {
+            var maestroReadedOk = true;
             MR.InitMetodo();
             if (enMaestro)
-                MR.ReadMaestro();
+                maestroReadedOk = ReadMaestro();
+
+            if (!maestroReadedOk)
+                return null;
 
             string key = MR.KeyOfRegistroPwd(regPwd);
-            if (string.IsNullOrEmpty(key) || key == MR.KeyVacia || key == G.RegNull)
+            if (!MR.IsKeyValida(key))
             {
                 MR.HayError = true;
                 MR.MensajeError = $"Error: key invalida: '{key ?? "null"}'" +
@@ -332,7 +346,7 @@ namespace _2PwdClasses
                 return false;
             }
 
-            MR.ClearMaestro();
+            MR.ClearTableMaestro();
             try
             {
                 foreach (var row in rows)
@@ -391,20 +405,32 @@ namespace _2PwdClasses
                 regPwd.UpdateDate = DateTime.Parse(strDate);
             }
             catch {}
-            regPwd.RegId = fields.Length > i ? (fields?[i] != null ? fields[i] : string.Empty) : string.Empty;
+            regPwd.RegId = fields.Length > i ? (fields?[i] != null ? fields[i] : string.Empty) : string.Empty; i++;
+            regPwd.LastRegId = fields.Length > i ? (fields?[i] != null ? fields[i] : string.Empty) : string.Empty;
             return regPwd;
         }
         public static RegistroPwd UpdateRegPwd(RegistroPwd regPwd, bool enMaestro = true)
         {
+            var maestroReadedOk = true;
             MR.InitMetodo();
             if (enMaestro)
-                 MR.ReadMaestro();
+                maestroReadedOk = ReadMaestro();
+
+            if (!maestroReadedOk)
+                return null;
 
             string key = MR.KeyOfRegistroPwd(regPwd);
-            if (string.IsNullOrEmpty(key) || key == MR.KeyVacia || key == G.RegNull || !MR.TableMaestro.ContainsKey(key))
+            if (!MR.IsKeyValida(key))
             {
                 MR.HayError = true;
-                MR.MensajeError = $"Error: key invalida o inexistente: '{key ?? "null"}'" +
+                MR.MensajeError = $"Error: key invalida: '{key ?? "null"}'" +
+                                  $", en {nameof(ManejadorRegistros)}.{nameof(UpdateRegPwd)}!";
+                return null;
+            }
+            if (!MR.KeyExiste(key))
+            {
+                MR.HayError = true;
+                MR.MensajeError = $"Error: key inexistente: '{key ?? "null"}'" +
                                   $", en {nameof(ManejadorRegistros)}.{nameof(UpdateRegPwd)}!";
                 return null;
             }
@@ -479,7 +505,7 @@ namespace _2PwdClasses
             {
                 if (MR.Updated)
                     MR.WriteFile();
-                MR.ClearMaestro();
+                MR.ClearTableMaestro();
             }
             catch (Exception ex)
             {
